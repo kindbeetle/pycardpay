@@ -1,0 +1,145 @@
+PyCardPay Documentation
+**************************
+
+The module uses two third-party libraries
+	* `requests <http://docs.python-requests.org/en/latest/>`_
+	* `lxml <http://lxml.de/>`_
+	
+You can install them with pip:
+
+>>> pip install -r PyCardPay/requirements.txt
+
+Or:
+
+>>> pip install requests lxml
+
+.. note::
+	Windows users may encounter problems with installing ``lxml`` because it requires compiler to build.
+	You can download appropriate version from `<http://www.lfd.uci.edu/~gohlke/pythonlibs/#lxml>`_
+
+PyCardPay quick methods list:
+
+- Process payment :func:`PyCardPay.api.pay`
+- Capture transaction :func:`PyCardPay.api.capture`
+- Refund transaction :func:`PyCardPay.api.refund`
+- Void transaction :func:`PyCardPay.api.void`
+- Check payment status :func:`PyCardPay.api.status`
+- Change transaction status :func:`PyCardPay.api.status_change`
+- Finish 3Ds authorization :func:`PyCardPay.api.finish_3ds`
+- Create order xml :func:`PyCardPay.utils.order_to_xml`
+- XML to base64 :func:`PyCardPay.utils.xml_to_string`
+- Calculate sha512 :func:`PyCardPay.utils.xml_get_sha512`
+- Validate XML checksum :func:`PyCardPay.utils.xml_check_sha512`
+
+Usage example
+===============
+
+Import PyCardPay module:
+
+>>> import PyCardPay
+>>> dir(PyCardPay)
+['__builtins__', '__doc__', '__file__', '__name__', '__package__', '__path__',
+ 'api', 'capture', 'exceptions', 'order_to_xml', 'pay', 'payment_form', 
+ 'refund', 'settings', 'status', 'status_change', 'utils', 'void', 'xml_check_sha512', 
+ 'xml_get_sha512', 'xml_to_string']
+ 
+Create new order:
+
+>>> order_number = 1986
+>>> order_data = {
+		'order': {'wallet_id': 1598, 'number': order_number, 'amount': 200,
+				  'email': 'customer@example.com', 'is_gateway': True},
+		'billing': {'country': 'RU', 'state': 'Moscow', 'city': 'Moscow', 'zip': '12345',
+					'street': 'Test str', 'phone': '380501234567'},
+		'card': {'num': '4000000000000000', 'cvv': '123', 'holder': 'John Doe',
+				 'expires': '12/15'},
+		'items': [{'name': 'Test item #1', 'count': 2}, {'name': 'Test item #2', 'count': 1}],
+	}
+>>> xml = PyCardPay.order_to_xml(**order_data)
+>>> print type(xml)
+<type 'lxml.etree._Element'>
+>>> print xml
+<Element order at 0x2229288>
+>>> print PyCardPay.xml_to_string(xml, encode_base64=False)
+<?xml version='1.0' encoding='utf-8'?>
+<order description="" locale="en" is_gateway="yes" number="1986" amount="200" wallet_id="1598" email="customer@example.com" is_two_phase="no">
+  <order_item count="2" price="0" description="" name="Test item #1"/>
+  <order_item count="1" price="0" description="" name="Test item #2"/>
+  <address city="Moscow" zip="12345" country="RU" phone="380501234567" state="Moscow" street="Test str" type="Billing"/>
+  <card cvv="123" num="4000000000000000" holder="John Doe" expires="12/15"/>
+</order>
+
+You can calculate base64 and sha512 values for your payment form:
+
+>>> print 'orderXML: ', PyCardPay.xml_to_string(xml)
+orderXML:  PD94bWwgdmVyc2lvbj0nMS4wJyBlbmN...
+>>> print 'sha512: ', PyCardPay.xml_get_sha512(xml, 'YourSecretPassword')
+sha512:  dd50f6ceb63e7189a760b37bde334d364...
+	
+If you are planing to use "Gateway mode" ensure to set ``is_gateway`` parameter to ``True`` 
+otherwise :class:`PyCardPay.exceptions.XMLParsingError` will occur:
+
+>>> order_data['order']['is_gateway'] = True
+>>> xml = PyCardPay.order_to_xml(**order_data)
+
+Now we are ready to pay for order:
+
+>>> result = PyCardPay.pay(xml, 'YourSecretPassword')
+>>> print result
+{'status': 'APPROVED', 'description': 'CONFIRMED', 'id': '-', 'number': '1986', 'is_3ds_required': False}
+
+To use 3Ds authorization set ``is_two_phase`` parameter to ``True``. 
+
+.. note::
+	If you are using this mode with "Gateway Mode" see :func:`PyCardPay.api.pay` for more details.
+
+You can check transaction status with :func:`PyCardPay.api.status`:
+
+>>> from pprint import pprint
+>>> print PyCardPay.status(client_login='your_login', client_password='your_password')
+{'details': '',
+ 'is_executed': True,
+ 'orders': [{'amount': '1',
+             'date_in': '2014-04-28 22:20',
+             'email': 'test@cardpay.com',
+             'hold_number': '31067703be84bf08a930ad1144f699b83158e01f',
+             'id': '537599',
+             'status_name': 'clearing_success'},
+            {'amount': '1',
+             'date_in': '2014-04-28 21:55',
+             'email': 'test@cardpay.com',
+             'hold_number': '5043696eec91f3b6b472b2e19d8fdf6061628fec',
+             'id': '537590',
+             'status_name': 'clearing_success'},
+            ...]}
+			
+To change transaction status use one of following methods:
+	* :func:`PyCardPay.api.capture`
+	* :func:`PyCardPay.api.refund`
+	* :func:`PyCardPay.api.void`
+
+>>> print PyCardPay.capture(client_login='pyton.cardpay.com', client_password='ektSB98Kx16H', id='537599')
+{'details': 'Status [capture] not allowed after [SUCCESS_CAPTURE]', 'is_executed': False}
+>>> print PyCardPay.refund(client_login='pyton.cardpay.com', client_password='ektSB98Kx16H', id='537599', reason='Anti-Fraud'
+{'details': '', 'is_executed': True}
+
+.. automodule:: PyCardPay
+
+CardPayAPI
+=========================
+
+.. automodule:: PyCardPay.api
+	:members:
+	
+Utils
+=========================
+
+.. automodule:: PyCardPay.utils
+	:members:
+	
+Exceptions
+=========================
+
+.. automodule:: PyCardPay.exceptions
+	:members:
+	

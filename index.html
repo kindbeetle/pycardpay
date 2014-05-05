@@ -1,0 +1,740 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>PyCardPay Documentation &mdash; PyCardPay 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="PyCardPay 0.1 documentation" href="#" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="#">PyCardPay 0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="pycardpay-documentation">
+<h1>PyCardPay Documentation<a class="headerlink" href="#pycardpay-documentation" title="Permalink to this headline">¶</a></h1>
+<dl class="docutils">
+<dt>The module uses two third-party libraries</dt>
+<dd><ul class="first last simple">
+<li><a class="reference external" href="http://docs.python-requests.org/en/latest/">requests</a></li>
+<li><a class="reference external" href="http://lxml.de/">lxml</a></li>
+</ul>
+</dd>
+</dl>
+<p>You can install them with pip:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">pip</span> <span class="n">install</span> <span class="o">-</span><span class="n">r</span> <span class="n">PyCardPay</span><span class="o">/</span><span class="n">requirements</span><span class="o">.</span><span class="n">txt</span>
+</pre></div>
+</div>
+<p>Or:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">pip</span> <span class="n">install</span> <span class="n">requests</span> <span class="n">lxml</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Windows users may encounter problems with installing <tt class="docutils literal"><span class="pre">lxml</span></tt> because it requires compiler to build.
+You can download appropriate version from <a class="reference external" href="http://www.lfd.uci.edu/~gohlke/pythonlibs/#lxml">http://www.lfd.uci.edu/~gohlke/pythonlibs/#lxml</a></p>
+</div>
+<p>PyCardPay quick methods list:</p>
+<ul class="simple">
+<li>Process payment <a class="reference internal" href="#PyCardPay.api.pay" title="PyCardPay.api.pay"><tt class="xref py py-func docutils literal"><span class="pre">PyCardPay.api.pay()</span></tt></a></li>
+<li>Capture transaction <a class="reference internal" href="#PyCardPay.api.capture" title="PyCardPay.api.capture"><tt class="xref py py-func docutils literal"><span class="pre">PyCardPay.api.capture()</span></tt></a></li>
+<li>Refund transaction <a class="reference internal" href="#PyCardPay.api.refund" title="PyCardPay.api.refund"><tt class="xref py py-func docutils literal"><span class="pre">PyCardPay.api.refund()</span></tt></a></li>
+<li>Void transaction <a class="reference internal" href="#PyCardPay.api.void" title="PyCardPay.api.void"><tt class="xref py py-func docutils literal"><span class="pre">PyCardPay.api.void()</span></tt></a></li>
+<li>Check payment status <a class="reference internal" href="#PyCardPay.api.status" title="PyCardPay.api.status"><tt class="xref py py-func docutils literal"><span class="pre">PyCardPay.api.status()</span></tt></a></li>
+<li>Change transaction status <a class="reference internal" href="#PyCardPay.api.status_change" title="PyCardPay.api.status_change"><tt class="xref py py-func docutils literal"><span class="pre">PyCardPay.api.status_change()</span></tt></a></li>
+<li>Finish 3Ds authorization <a class="reference internal" href="#PyCardPay.api.finish_3ds" title="PyCardPay.api.finish_3ds"><tt class="xref py py-func docutils literal"><span class="pre">PyCardPay.api.finish_3ds()</span></tt></a></li>
+<li>Create order xml <a class="reference internal" href="#PyCardPay.utils.order_to_xml" title="PyCardPay.utils.order_to_xml"><tt class="xref py py-func docutils literal"><span class="pre">PyCardPay.utils.order_to_xml()</span></tt></a></li>
+<li>XML to base64 <a class="reference internal" href="#PyCardPay.utils.xml_to_string" title="PyCardPay.utils.xml_to_string"><tt class="xref py py-func docutils literal"><span class="pre">PyCardPay.utils.xml_to_string()</span></tt></a></li>
+<li>Calculate sha512 <a class="reference internal" href="#PyCardPay.utils.xml_get_sha512" title="PyCardPay.utils.xml_get_sha512"><tt class="xref py py-func docutils literal"><span class="pre">PyCardPay.utils.xml_get_sha512()</span></tt></a></li>
+<li>Validate XML checksum <a class="reference internal" href="#PyCardPay.utils.xml_check_sha512" title="PyCardPay.utils.xml_check_sha512"><tt class="xref py py-func docutils literal"><span class="pre">PyCardPay.utils.xml_check_sha512()</span></tt></a></li>
+</ul>
+<div class="section" id="usage-example">
+<h2>Usage example<a class="headerlink" href="#usage-example" title="Permalink to this headline">¶</a></h2>
+<p>Import PyCardPay module:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">PyCardPay</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">dir</span><span class="p">(</span><span class="n">PyCardPay</span><span class="p">)</span>
+<span class="go">[&#39;__builtins__&#39;, &#39;__doc__&#39;, &#39;__file__&#39;, &#39;__name__&#39;, &#39;__package__&#39;, &#39;__path__&#39;,</span>
+<span class="go"> &#39;api&#39;, &#39;capture&#39;, &#39;exceptions&#39;, &#39;order_to_xml&#39;, &#39;pay&#39;, &#39;payment_form&#39;,</span>
+<span class="go"> &#39;refund&#39;, &#39;settings&#39;, &#39;status&#39;, &#39;status_change&#39;, &#39;utils&#39;, &#39;void&#39;, &#39;xml_check_sha512&#39;,</span>
+<span class="go"> &#39;xml_get_sha512&#39;, &#39;xml_to_string&#39;]</span>
+</pre></div>
+</div>
+<p>Create new order:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">order_number</span> <span class="o">=</span> <span class="mi">1986</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">order_data</span> <span class="o">=</span> <span class="p">{</span>
+<span class="go">                &#39;order&#39;: {&#39;wallet_id&#39;: 1598, &#39;number&#39;: order_number, &#39;amount&#39;: 200,</span>
+<span class="go">                                  &#39;email&#39;: &#39;customer@example.com&#39;, &#39;is_gateway&#39;: True},</span>
+<span class="go">                &#39;billing&#39;: {&#39;country&#39;: &#39;RU&#39;, &#39;state&#39;: &#39;Moscow&#39;, &#39;city&#39;: &#39;Moscow&#39;, &#39;zip&#39;: &#39;12345&#39;,</span>
+<span class="go">                                        &#39;street&#39;: &#39;Test str&#39;, &#39;phone&#39;: &#39;380501234567&#39;},</span>
+<span class="go">                &#39;card&#39;: {&#39;num&#39;: &#39;4000000000000000&#39;, &#39;cvv&#39;: &#39;123&#39;, &#39;holder&#39;: &#39;John Doe&#39;,</span>
+<span class="go">                                 &#39;expires&#39;: &#39;12/15&#39;},</span>
+<span class="go">                &#39;items&#39;: [{&#39;name&#39;: &#39;Test item #1&#39;, &#39;count&#39;: 2}, {&#39;name&#39;: &#39;Test item #2&#39;, &#39;count&#39;: 1}],</span>
+<span class="go">        }</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">xml</span> <span class="o">=</span> <span class="n">PyCardPay</span><span class="o">.</span><span class="n">order_to_xml</span><span class="p">(</span><span class="o">**</span><span class="n">order_data</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="nb">type</span><span class="p">(</span><span class="n">xml</span><span class="p">)</span>
+<span class="go">&lt;type &#39;lxml.etree._Element&#39;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">xml</span>
+<span class="go">&lt;Element order at 0x2229288&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">PyCardPay</span><span class="o">.</span><span class="n">xml_to_string</span><span class="p">(</span><span class="n">xml</span><span class="p">,</span> <span class="n">encode_base64</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+<span class="go">&lt;?xml version=&#39;1.0&#39; encoding=&#39;utf-8&#39;?&gt;</span>
+<span class="go">&lt;order description=&quot;&quot; locale=&quot;en&quot; is_gateway=&quot;yes&quot; number=&quot;1986&quot; amount=&quot;200&quot; wallet_id=&quot;1598&quot; email=&quot;customer@example.com&quot; is_two_phase=&quot;no&quot;&gt;</span>
+<span class="go">  &lt;order_item count=&quot;2&quot; price=&quot;0&quot; description=&quot;&quot; name=&quot;Test item #1&quot;/&gt;</span>
+<span class="go">  &lt;order_item count=&quot;1&quot; price=&quot;0&quot; description=&quot;&quot; name=&quot;Test item #2&quot;/&gt;</span>
+<span class="go">  &lt;address city=&quot;Moscow&quot; zip=&quot;12345&quot; country=&quot;RU&quot; phone=&quot;380501234567&quot; state=&quot;Moscow&quot; street=&quot;Test str&quot; type=&quot;Billing&quot;/&gt;</span>
+<span class="go">  &lt;card cvv=&quot;123&quot; num=&quot;4000000000000000&quot; holder=&quot;John Doe&quot; expires=&quot;12/15&quot;/&gt;</span>
+<span class="go">&lt;/order&gt;</span>
+</pre></div>
+</div>
+<p>You can calculate base64 and sha512 values for your payment form:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="s">&#39;orderXML: &#39;</span><span class="p">,</span> <span class="n">PyCardPay</span><span class="o">.</span><span class="n">xml_to_string</span><span class="p">(</span><span class="n">xml</span><span class="p">)</span>
+<span class="go">orderXML:  PD94bWwgdmVyc2lvbj0nMS4wJyBlbmN...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="s">&#39;sha512: &#39;</span><span class="p">,</span> <span class="n">PyCardPay</span><span class="o">.</span><span class="n">xml_get_sha512</span><span class="p">(</span><span class="n">xml</span><span class="p">,</span> <span class="s">&#39;YourSecretPassword&#39;</span><span class="p">)</span>
+<span class="go">sha512:  dd50f6ceb63e7189a760b37bde334d364...</span>
+</pre></div>
+</div>
+<p>If you are planing to use &#8220;Gateway mode&#8221; ensure to set <tt class="docutils literal"><span class="pre">is_gateway</span></tt> parameter to <tt class="docutils literal"><span class="pre">True</span></tt>
+otherwise <a class="reference internal" href="#PyCardPay.exceptions.XMLParsingError" title="PyCardPay.exceptions.XMLParsingError"><tt class="xref py py-class docutils literal"><span class="pre">PyCardPay.exceptions.XMLParsingError</span></tt></a> will occur:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">order_data</span><span class="p">[</span><span class="s">&#39;order&#39;</span><span class="p">][</span><span class="s">&#39;is_gateway&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">xml</span> <span class="o">=</span> <span class="n">PyCardPay</span><span class="o">.</span><span class="n">order_to_xml</span><span class="p">(</span><span class="o">**</span><span class="n">order_data</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Now we are ready to pay for order:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">PyCardPay</span><span class="o">.</span><span class="n">pay</span><span class="p">(</span><span class="n">xml</span><span class="p">,</span> <span class="s">&#39;YourSecretPassword&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">result</span>
+<span class="go">{&#39;status&#39;: &#39;APPROVED&#39;, &#39;description&#39;: &#39;CONFIRMED&#39;, &#39;id&#39;: &#39;-&#39;, &#39;number&#39;: &#39;1986&#39;, &#39;is_3ds_required&#39;: False}</span>
+</pre></div>
+</div>
+<p>To use 3Ds authorization set <tt class="docutils literal"><span class="pre">is_two_phase</span></tt> parameter to <tt class="docutils literal"><span class="pre">True</span></tt>.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">If you are using this mode with &#8220;Gateway Mode&#8221; see <a class="reference internal" href="#PyCardPay.api.pay" title="PyCardPay.api.pay"><tt class="xref py py-func docutils literal"><span class="pre">PyCardPay.api.pay()</span></tt></a> for more details.</p>
+</div>
+<p>You can check transaction status with <a class="reference internal" href="#PyCardPay.api.status" title="PyCardPay.api.status"><tt class="xref py py-func docutils literal"><span class="pre">PyCardPay.api.status()</span></tt></a>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pprint</span> <span class="kn">import</span> <span class="n">pprint</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">PyCardPay</span><span class="o">.</span><span class="n">status</span><span class="p">(</span><span class="n">client_login</span><span class="o">=</span><span class="s">&#39;your_login&#39;</span><span class="p">,</span> <span class="n">client_password</span><span class="o">=</span><span class="s">&#39;your_password&#39;</span><span class="p">)</span>
+<span class="go">{&#39;details&#39;: &#39;&#39;,</span>
+<span class="go"> &#39;is_executed&#39;: True,</span>
+<span class="go"> &#39;orders&#39;: [{&#39;amount&#39;: &#39;1&#39;,</span>
+<span class="go">             &#39;date_in&#39;: &#39;2014-04-28 22:20&#39;,</span>
+<span class="go">             &#39;email&#39;: &#39;test@cardpay.com&#39;,</span>
+<span class="go">             &#39;hold_number&#39;: &#39;31067703be84bf08a930ad1144f699b83158e01f&#39;,</span>
+<span class="go">             &#39;id&#39;: &#39;537599&#39;,</span>
+<span class="go">             &#39;status_name&#39;: &#39;clearing_success&#39;},</span>
+<span class="go">            {&#39;amount&#39;: &#39;1&#39;,</span>
+<span class="go">             &#39;date_in&#39;: &#39;2014-04-28 21:55&#39;,</span>
+<span class="go">             &#39;email&#39;: &#39;test@cardpay.com&#39;,</span>
+<span class="go">             &#39;hold_number&#39;: &#39;5043696eec91f3b6b472b2e19d8fdf6061628fec&#39;,</span>
+<span class="go">             &#39;id&#39;: &#39;537590&#39;,</span>
+<span class="go">             &#39;status_name&#39;: &#39;clearing_success&#39;},</span>
+<span class="go">            ...]}</span>
+</pre></div>
+</div>
+<dl class="docutils">
+<dt>To change transaction status use one of following methods:</dt>
+<dd><ul class="first last simple">
+<li><a class="reference internal" href="#PyCardPay.api.capture" title="PyCardPay.api.capture"><tt class="xref py py-func docutils literal"><span class="pre">PyCardPay.api.capture()</span></tt></a></li>
+<li><a class="reference internal" href="#PyCardPay.api.refund" title="PyCardPay.api.refund"><tt class="xref py py-func docutils literal"><span class="pre">PyCardPay.api.refund()</span></tt></a></li>
+<li><a class="reference internal" href="#PyCardPay.api.void" title="PyCardPay.api.void"><tt class="xref py py-func docutils literal"><span class="pre">PyCardPay.api.void()</span></tt></a></li>
+</ul>
+</dd>
+</dl>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">PyCardPay</span><span class="o">.</span><span class="n">capture</span><span class="p">(</span><span class="n">client_login</span><span class="o">=</span><span class="s">&#39;pyton.cardpay.com&#39;</span><span class="p">,</span> <span class="n">client_password</span><span class="o">=</span><span class="s">&#39;ektSB98Kx16H&#39;</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="s">&#39;537599&#39;</span><span class="p">)</span>
+<span class="go">{&#39;details&#39;: &#39;Status [capture] not allowed after [SUCCESS_CAPTURE]&#39;, &#39;is_executed&#39;: False}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">PyCardPay</span><span class="o">.</span><span class="n">refund</span><span class="p">(</span><span class="n">client_login</span><span class="o">=</span><span class="s">&#39;pyton.cardpay.com&#39;</span><span class="p">,</span> <span class="n">client_password</span><span class="o">=</span><span class="s">&#39;ektSB98Kx16H&#39;</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="s">&#39;537599&#39;</span><span class="p">,</span> <span class="n">reason</span><span class="o">=</span><span class="s">&#39;Anti-Fraud&#39;</span>
+<span class="go">{&#39;details&#39;: &#39;&#39;, &#39;is_executed&#39;: True}</span>
+</pre></div>
+</div>
+<span class="target" id="module-PyCardPay"></span></div>
+<div class="section" id="module-PyCardPay.api">
+<span id="cardpayapi"></span><h2>CardPayAPI<a class="headerlink" href="#module-PyCardPay.api" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="PyCardPay.api.capture">
+<tt class="descclassname">PyCardPay.api.</tt><tt class="descname">capture</tt><big>(</big><em>**kwargs</em><big>)</big><a class="headerlink" href="#PyCardPay.api.capture" title="Permalink to this definition">¶</a></dt>
+<dd><p>Change transaction status to &#8220;CAPTURE&#8221;</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>**kwargs</strong> &#8211; See <a class="reference internal" href="#PyCardPay.api.status_change" title="PyCardPay.api.status_change"><tt class="xref py py-func docutils literal"><span class="pre">status_change()</span></tt></a> for details</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Result from <a class="reference internal" href="#PyCardPay.api.status_change" title="PyCardPay.api.status_change"><tt class="xref py py-func docutils literal"><span class="pre">status_change()</span></tt></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="PyCardPay.api.finish_3ds">
+<tt class="descclassname">PyCardPay.api.</tt><tt class="descname">finish_3ds</tt><big>(</big><em>MD</em>, <em>PaRes</em><big>)</big><a class="headerlink" href="#PyCardPay.api.finish_3ds" title="Permalink to this definition">¶</a></dt>
+<dd><p>Finish 3Ds authorization.</p>
+<p>This method returns the same result as <a class="reference internal" href="#PyCardPay.api.pay" title="PyCardPay.api.pay"><tt class="xref py py-func docutils literal"><span class="pre">PyCardPay.api.pay()</span></tt></a>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>MD</strong> (<em>str|unicode</em>) &#8211; MD value received after payment request from CardPay API.</li>
+<li><strong>PaRes</strong> (<em>str|unicode</em>) &#8211; Response code from bank after authorization.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first"><a class="reference internal" href="#PyCardPay.exceptions.XMLParsingError" title="PyCardPay.exceptions.XMLParsingError"><tt class="xref py py-class docutils literal"><span class="pre">PyCardPay.exceptions.XMLParsingError</span></tt></a> if response contains unknown xml structure.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">dict &#8211; see <a class="reference internal" href="#PyCardPay.api.pay" title="PyCardPay.api.pay"><tt class="xref py py-func docutils literal"><span class="pre">PyCardPay.api.pay()</span></tt></a> for description.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="PyCardPay.api.pay">
+<tt class="descclassname">PyCardPay.api.</tt><tt class="descname">pay</tt><big>(</big><em>xml</em>, <em>secret</em><big>)</big><a class="headerlink" href="#PyCardPay.api.pay" title="Permalink to this definition">¶</a></dt>
+<dd><p>Process payment</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>xml</strong> (<tt class="xref py py-class docutils literal"><span class="pre">lxml.etree.Element</span></tt>) &#8211; Order XML created with <a class="reference internal" href="#PyCardPay.utils.order_to_xml" title="PyCardPay.utils.order_to_xml"><tt class="xref py py-func docutils literal"><span class="pre">PyCardPay.utils.order_to_xml()</span></tt></a></li>
+<li><strong>secret</strong> (<em>str|unicode</em>) &#8211; Your CardPay secret password.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first">TypeError if passed not an <tt class="xref py py-class docutils literal"><span class="pre">lxml.etree.Element</span></tt> as xml parameter.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><p class="first"><a class="reference internal" href="#PyCardPay.exceptions.XMLParsingError" title="PyCardPay.exceptions.XMLParsingError"><tt class="xref py py-class docutils literal"><span class="pre">PyCardPay.exceptions.XMLParsingError</span></tt></a> if response contains unknown xml structure.</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">dict &#8211; see below for description</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Returning dict always contains key <tt class="docutils literal"><span class="pre">is_3ds_required</span></tt>. If it set to <tt class="docutils literal"><span class="pre">False</span></tt> the dict will be:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">payment_result</span> <span class="o">=</span> <span class="n">PyCardPay</span><span class="o">.</span><span class="n">pay</span><span class="p">(</span><span class="n">xml</span><span class="p">,</span> <span class="s">&#39;YourSecretPassword&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">payment_result</span>
+<span class="go">{</span>
+<span class="go">    &#39;is_3ds_required&#39;: False,   # 3Ds authorization **not** required</span>
+<span class="go">    &#39;id&#39;: &#39;12345&#39;,              # Transaction ID</span>
+<span class="go">    &#39;number&#39;: &#39;54321&#39;,          # Your order number</span>
+<span class="go">    &#39;status&#39;: &#39;APPROVED&#39;,       # Transaction status. May contains values: &#39;APPROVED&#39;, &#39;DECLINED&#39;, &#39;HOLD&#39;</span>
+<span class="go">    &#39;description&#39;: &#39;Test&#39;,      # Status description</span>
+<span class="go">}</span>
+</pre></div>
+</div>
+<p>If <tt class="docutils literal"><span class="pre">is_3ds_required</span></tt> is set to <tt class="docutils literal"><span class="pre">True</span></tt>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">payment_result</span>
+<span class="go">{</span>
+<span class="go">    &#39;is_3ds_required&#39;: True,    # 3Ds authorization required</span>
+<span class="go">    &#39;url&#39;:  &#39;...&#39;,              # URL for which you need to send a POST request</span>
+<span class="go">    &#39;MD&#39;: &#39;...&#39;,                # MD - data for POST request</span>
+<span class="go">    &#39;PaReq&#39;: &#39;...&#39;,             # PaReq - data for POST request</span>
+<span class="go">}</span>
+</pre></div>
+</div>
+<p>Then you need to redirect the user to 3Ds authorization page. Sample form:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">form_3ds</span> <span class="o">=</span> <span class="p">[</span>
+<span class="go">    &#39;&lt;form action=&quot;{}&quot; method=&quot;POST&quot;&gt;&#39;.format(payment_result[&#39;url&#39;]),</span>
+<span class="go">    &#39;&lt;input type=&quot;hidden&quot; name=&quot;PaReq&quot; value=&quot;{}&quot;&gt;&#39;.format(payment_result[&#39;PaReq&#39;]),</span>
+<span class="go">    &#39;&lt;input type=&quot;hidden&quot; name=&quot;MD&quot; value=&quot;{}&quot;&gt;&#39;.format(payment_result[&#39;MD&#39;]),</span>
+<span class="go">    &#39;&lt;input type=&quot;hidden&quot; name=&quot;TermUrl&quot; value=&quot;{}&quot;&gt;&#39;.format(callback_page_url),</span>
+<span class="go">    &#39;&lt;/form&gt;&#39;</span>
+<span class="go">]</span>
+<span class="go">&gt;&gt; form_3ds = &#39;&#39;.join(form_3ds)</span>
+</pre></div>
+</div>
+<p>Where <tt class="docutils literal"><span class="pre">callback_page_url</span></tt> is your URL to which customer will be returned after the authentication in bank. You
+will get back POST request with parameter <tt class="docutils literal"><span class="pre">PaRes</span></tt> - response code from bank. Now you can complete payment with
+<a class="reference internal" href="#PyCardPay.api.finish_3ds" title="PyCardPay.api.finish_3ds"><tt class="xref py py-func docutils literal"><span class="pre">PyCardPay.api.finish_3ds()</span></tt></a></p>
+</dd></dl>
+
+<dl class="function">
+<dt id="PyCardPay.api.refund">
+<tt class="descclassname">PyCardPay.api.</tt><tt class="descname">refund</tt><big>(</big><em>**kwargs</em><big>)</big><a class="headerlink" href="#PyCardPay.api.refund" title="Permalink to this definition">¶</a></dt>
+<dd><p>Change transaction status to &#8220;REFUND&#8221;</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>**kwargs</strong> &#8211; See <a class="reference internal" href="#PyCardPay.api.status_change" title="PyCardPay.api.status_change"><tt class="xref py py-func docutils literal"><span class="pre">status_change()</span></tt></a> for details</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Result from <a class="reference internal" href="#PyCardPay.api.status_change" title="PyCardPay.api.status_change"><tt class="xref py py-func docutils literal"><span class="pre">status_change()</span></tt></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="PyCardPay.api.status">
+<tt class="descclassname">PyCardPay.api.</tt><tt class="descname">status</tt><big>(</big><em>**kwargs</em><big>)</big><a class="headerlink" href="#PyCardPay.api.status" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get transactions report</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>client_login</strong> (<em>str|unicode</em>) &#8211; Unique store id. It is the same as for administrative interface.</li>
+<li><strong>client_password</strong> (<em>str|unicode</em>) &#8211; Store password. It is the same as for administrative interface.</li>
+<li><strong>wallet_id</strong> (<em>int</em>) &#8211; Store id in CardPay system.</li>
+<li><strong>date_begin</strong> (<em>srt|unicode</em>) &#8211; (optional) Date from which you want to receive last 10 transactions. Valid format: &#8216;yyyy-MM-dd&#8217;
+or &#8216;yyyy-MM-dd HH:mm&#8217;.</li>
+<li><strong>date_end</strong> (<em>str|unicode</em>) &#8211; (optional) Date before which you want to receive last 10 transactions. Valid format: &#8216;yyyy-MM-dd&#8217;
+or &#8216;yyyy-MM-dd HH:mm&#8217;.</li>
+<li><strong>currency</strong> (<em>str|unicode</em>) &#8211; (optional) Is used when store works with multiple currencies. Country code from ISO 3166.</li>
+<li><strong>order_number</strong> (<em>int</em>) &#8211; (optional) Transaction number. If one transaction data is needed.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first"><a class="reference internal" href="#PyCardPay.exceptions.XMLParsingError" title="PyCardPay.exceptions.XMLParsingError"><tt class="xref py py-class docutils literal"><span class="pre">PyCardPay.exceptions.XMLParsingError</span></tt></a></p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">dict</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Return dict structure:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="p">{</span>
+<span class="go">    &#39;is_executed&#39;: True,                        # Success or Fail</span>
+<span class="go">    &#39;details&#39;: &#39;&#39;,                              # Contains detailed description when request failed.</span>
+<span class="go">    &#39;orders&#39;: [                                 # Orders list</span>
+<span class="go">        {</span>
+<span class="go">            &#39;id&#39;: &#39;12345&#39;,                      # Transaction ID</span>
+<span class="go">            &#39;status_name&#39;: &#39;clearing_success&#39;,  # Transaction status</span>
+<span class="go">            &#39;date_in&#39;:  &#39;2014-04-28 21:55&#39;,     # Payment date</span>
+<span class="go">            &#39;amount&#39;: &#39;210&#39;,                    # Payment amount</span>
+<span class="go">            &#39;hold_number: &#39;5043696eec91f3b6b472b2e19d8fdf6061628fec&#39;,</span>
+<span class="go">            &#39;email&#39;: &#39;test@cardpay.com&#39;,        # Customer email</span>
+<span class="go">        },</span>
+<span class="go">        ...</span>
+<span class="go">    ]</span>
+<span class="go">}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="PyCardPay.api.status_change">
+<tt class="descclassname">PyCardPay.api.</tt><tt class="descname">status_change</tt><big>(</big><em>**kwargs</em><big>)</big><a class="headerlink" href="#PyCardPay.api.status_change" title="Permalink to this definition">¶</a></dt>
+<dd><p>Change transaction status.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>id</strong> (<em>int</em>) &#8211; Transaction id</li>
+<li><strong>status_to</strong> &#8211; New transaction status. Valid values: <em>capture</em>, <em>refund</em>, <em>void</em>.</li>
+<li><strong>client_login</strong> (<em>str|unicode</em>) &#8211; Unique store id. It is the same as for administrative interface</li>
+<li><strong>client_password</strong> (<em>str|unicode</em>) &#8211; Store password. It is the same as for administrative interface</li>
+<li><strong>reason</strong> (<em>str|unicode</em>) &#8211; (optional) Refund reason. <strong>Required</strong> if status_to is &#8216;refund&#8217;</li>
+<li><strong>amount</strong> (<em>Decimal|int</em>) &#8211; (optional) Refund amount in transaction currency. If not set then full refund will be made</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first"><a class="reference internal" href="#PyCardPay.exceptions.HTTPError" title="PyCardPay.exceptions.HTTPError"><tt class="xref py py-class docutils literal"><span class="pre">PyCardPay.exceptions.HTTPError</span></tt></a>, <a class="reference internal" href="#PyCardPay.exceptions.XMLParsingError" title="PyCardPay.exceptions.XMLParsingError"><tt class="xref py py-class docutils literal"><span class="pre">PyCardPay.exceptions.XMLParsingError</span></tt></a></p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">dict</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Return dict structure:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="p">{</span><span class="s">&#39;is_executed&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span> <span class="s">&#39;details&#39;</span><span class="p">:</span> <span class="s">&#39;&#39;</span><span class="p">}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">{</span><span class="s">&#39;is_executed&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">,</span> <span class="s">&#39;details&#39;</span><span class="p">:</span> <span class="s">&#39;Status [capture] not allowed after [SUCCESS_CAPTURE]&#39;</span><span class="p">}</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">There is no need to pass <em>status_to</em> parameter if you are using methods <a class="reference internal" href="#PyCardPay.api.capture" title="PyCardPay.api.capture"><tt class="xref py py-func docutils literal"><span class="pre">capture()</span></tt></a>, <a class="reference internal" href="#PyCardPay.api.refund" title="PyCardPay.api.refund"><tt class="xref py py-func docutils literal"><span class="pre">refund()</span></tt></a> or
+<a class="reference internal" href="#PyCardPay.api.void" title="PyCardPay.api.void"><tt class="xref py py-func docutils literal"><span class="pre">void()</span></tt></a>.</p>
+</div>
+<p>Valid transaction status changes:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="52%" />
+<col width="48%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Status from</th>
+<th class="head">Status to</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>capture</td>
+<td>void</td>
+</tr>
+<tr class="row-odd"><td>capture</td>
+<td>refund</td>
+</tr>
+<tr class="row-even"><td>authorized</td>
+<td>capture</td>
+</tr>
+<tr class="row-odd"><td>authorize</td>
+<td>void</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="PyCardPay.api.void">
+<tt class="descclassname">PyCardPay.api.</tt><tt class="descname">void</tt><big>(</big><em>**kwargs</em><big>)</big><a class="headerlink" href="#PyCardPay.api.void" title="Permalink to this definition">¶</a></dt>
+<dd><p>Change transaction status to &#8220;VOID&#8221;</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>**kwargs</strong> &#8211; Parameters that <a class="reference internal" href="#PyCardPay.api.status_change" title="PyCardPay.api.status_change"><tt class="xref py py-func docutils literal"><span class="pre">status_change()</span></tt></a> takes</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Result from <a class="reference internal" href="#PyCardPay.api.status_change" title="PyCardPay.api.status_change"><tt class="xref py py-func docutils literal"><span class="pre">status_change()</span></tt></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="module-PyCardPay.utils">
+<span id="utils"></span><h2>Utils<a class="headerlink" href="#module-PyCardPay.utils" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="PyCardPay.utils.make_http_request">
+<tt class="descclassname">PyCardPay.utils.</tt><tt class="descname">make_http_request</tt><big>(</big><em>url</em>, <em>method='get'</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#PyCardPay.utils.make_http_request" title="Permalink to this definition">¶</a></dt>
+<dd><p>Make http get request to <em>url</em> passing <em>kwargs</em> as arguments</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>url</strong> (<em>str|unicode</em>) &#8211; Request url</li>
+<li><strong>method</strong> (<em>str|unicode</em>) &#8211; HTTP method</li>
+<li><strong>**kwargs</strong> &#8211; Request parameters</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first"><a class="reference internal" href="#PyCardPay.exceptions.HTTPError" title="PyCardPay.exceptions.HTTPError"><tt class="xref py py-class docutils literal"><span class="pre">PyCardPay.exceptions.HTTPError</span></tt></a> if server returns status code different from 2xx</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">HTML content</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="PyCardPay.utils.order_to_xml">
+<tt class="descclassname">PyCardPay.utils.</tt><tt class="descname">order_to_xml</tt><big>(</big><em>order</em>, <em>items=None</em>, <em>billing=None</em>, <em>shipping=None</em>, <em>card=None</em>, <em>recurring=None</em><big>)</big><a class="headerlink" href="#PyCardPay.utils.order_to_xml" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates order xml</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>order</strong> (<em>dict</em>) &#8211; Orders information.</li>
+<li><strong>items</strong> (<em>list</em>) &#8211; (optional) Product / service, provided to the customer.</li>
+<li><strong>shipping</strong> (<em>dict</em>) &#8211; (optional) Shipping address</li>
+<li><strong>billing</strong> (<em>dict</em>) &#8211; (optional) Billing address</li>
+<li><strong>card</strong> (<em>dict</em>) &#8211; (optional) Credit card information</li>
+<li><strong>recurring</strong> (<em>dict</em>) &#8211; Recurring payment</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first">KeyError if wasn&#8217;t specified required items in order parameter.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><tt class="xref py py-class docutils literal"><span class="pre">lxml.etree.Element</span></tt></p>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Minimal required parameters for <em>order</em> are: wallet_id, number, amount and email.</p>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">If &#8216;currency&#8217; parameter is not specified, ask your Account Manager which currency is used by default.</p>
+</div>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last"><em>card</em> and <em>billing</em> parameters <strong>should be used and required</strong> only in &#8220;Gateway Mode&#8221;.
+If required, you can omit both the <em>billing</em> and the <em>shipping</em> address. To enable this feature, please contact
+your Account Manager.</p>
+</div>
+<p>Parameters structure:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">order</span> <span class="o">=</span>  <span class="p">{</span>
+<span class="go">    &#39;wallet_id&#39;: 123,               # (int) Unique merchant&#39;s ID used by the CardPay payment system.</span>
+<span class="go">    &#39;number&#39;: 10,                   # (int) Unique order ID used by the merchant’s shopping cart.</span>
+<span class="go">    &#39;description&#39;: &#39;Red T-Shirt&#39;,   # (str) Optional. Description of product/service being sold.</span>
+<span class="go">    &#39;amount&#39;: 120,                  # (Decimal) The total order amount in your account’s selected currency.</span>
+<span class="go">    &#39;email&#39;: &#39;customer@exmaple.com&#39;, # (str|unicode) Customers e-mail address.</span>
+<span class="go">    &#39;is_two_phase&#39;: False,          # (bool) Optional. If set to True, the amount will not be captured but only</span>
+<span class="go">        blocked.</span>
+<span class="go">    &#39;currency&#39;: &#39;USD&#39;,              # (str|unicode) Optional. ISO 4217 currency code.</span>
+<span class="go">    &#39;is_gateway&#39;: False,            # (bool) Optional. If set to True, the &quot;Gateway Mode&quot; will be used.</span>
+<span class="go">    &#39;locale&#39;: &#39;ru&#39;,                 # (str|unicode) Optional. Preferred locale for the payment page.</span>
+<span class="go">    &#39;ip&#39;: &#39;10.20.30.40&#39;,            # (str|unicode) Optional. Customers IPv4 address. Used only in &quot;Gateway Mode&quot;.</span>
+<span class="go">}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">items</span> <span class="o">=</span> <span class="p">[</span>
+<span class="go">{</span>
+<span class="go">    &#39;name&#39;: &#39;Computer desk&#39;,        # (str|unicode) The name of product / service, provided to the customer.</span>
+<span class="go">    &#39;description&#39;: &#39;Sport Video&#39;,   # (str|unicode) Optional. Description of product / service, provided to the</span>
+<span class="go">        customer.</span>
+<span class="go">    &#39;count&#39;: 1,                     # (int) Optional. Product / service quantity.</span>
+<span class="go">    &#39;price&#39;: 100,                   # (Decimal) Optional. Price of product / service.</span>
+<span class="go">},</span>
+<span class="gp">...</span>
+<span class="go">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">billing</span> <span class="o">=</span> <span class="p">{</span>
+<span class="go">    &#39;country&#39;: &#39;USA&#39;,               # (str|unicode) ISO 3166-1 code of delivery country.</span>
+<span class="go">    &#39;state&#39;: &#39;NY&#39;,                  # (str|unicode) Delivery state or province.</span>
+<span class="go">    &#39;city&#39;: &#39;New York&#39;,             # (str|unicode) Delivery city.</span>
+<span class="go">    &#39;zip&#39;: &#39;04210&#39;,                 # (str|unicode) Delivery postal code.</span>
+<span class="go">    &#39;street&#39;: &#39;450 W. 33 Street&#39;,   # (str|unicode) Delivery street address.</span>
+<span class="go">    &#39;phone&#39;: &#39;+1 (212) 210-2100&#39;,   # (str|unicode) Customer phone number.</span>
+<span class="go">}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">shipping</span> <span class="o">=</span> <span class="p">{</span>
+<span class="go">    &#39;country&#39;: &#39;USA&#39;,               # (str|unicode) Optional. ISO 3166-1 code of delivery country.</span>
+<span class="go">    &#39;state&#39;: &#39;NY&#39;,                  # (str|unicode) Optional. Delivery state or province.</span>
+<span class="go">    &#39;city&#39;: &#39;New York&#39;,             # (str|unicode) Optional. Delivery city.</span>
+<span class="go">    &#39;zip&#39;: &#39;04210&#39;,                 # (str|unicode) Optional. Delivery postal code.</span>
+<span class="go">    &#39;street&#39;: &#39;450 W. 33 Street&#39;,   # (str|unicode) Optional. Delivery street address.</span>
+<span class="go">    &#39;phone&#39;: &#39;+1 (212) 210-2100&#39;,   # (str|unicode) Optional. Customer phone number.</span>
+<span class="go">}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">card</span> <span class="o">=</span> <span class="p">{</span>
+<span class="go">    &#39;num&#39;: &#39;1111222233334444&#39;,      # (str|unicode) Customers card number (PAN)</span>
+<span class="go">    &#39;holder&#39;: &#39;John Doe&#39;,           # (str|unicode) Cardholder name.</span>
+<span class="go">    &#39;cvv&#39;: &#39;321&#39;,                   # (str|unicode) Customers CVV2/CVC2 code. 3-4 positive digits.</span>
+<span class="go">    &#39;expires&#39;: &#39;04/15&#39;,             # (str|unicode) Card expiration date</span>
+<span class="go">}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">recurring</span> <span class="o">=</span> <span class="p">{</span>
+<span class="go">    &#39;period&#39;: 30,                   # (int) Period in days of extension of service.</span>
+<span class="go">    &#39;price&#39;: 120,                   # (Decimal) Optional. Cost of extension of service.</span>
+<span class="go">    &#39;begin&#39;: &#39;12.02.2015&#39;,          # (str|unicode) Optional. Date from which recurring payments begin.</span>
+<span class="go">    &#39;count&#39;: 10,                    # (int) Optional. Number of recurring payments.</span>
+<span class="go">}</span>
+</pre></div>
+</div>
+<p>Minimal usage example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">xml</span> <span class="o">=</span> <span class="n">PyCardPay</span><span class="o">.</span><span class="n">order_to_xml</span><span class="p">(</span><span class="n">order</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;wallet_id&#39;</span><span class="p">:</span> <span class="mi">20</span><span class="p">,</span> <span class="s">&#39;number&#39;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span> <span class="s">&#39;email&#39;</span><span class="p">:</span> <span class="s">&#39;customer@exmaple.com&#39;</span><span class="p">,</span>
+<span class="go">                                        &#39;amount&#39;: 120})</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="nb">type</span><span class="p">(</span><span class="n">xml</span><span class="p">)</span>
+<span class="go">&lt;type &#39;lxml.etree._Element&#39;&gt;</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">PyCardPay</span><span class="o">.</span><span class="n">xml_to_string</span><span class="p">(</span><span class="n">xml</span><span class="p">,</span> <span class="n">encode_base64</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+<span class="go">&lt;?xml version=&#39;1.0&#39; encoding=&#39;utf-8&#39;?&gt;</span>
+<span class="go">&lt;order description=&quot;&quot; locale=&quot;en&quot; is_gateway=&quot;no&quot; number=&quot;10&quot; amount=&quot;120&quot; wallet_id=&quot;20&quot;</span>
+<span class="go">    email=&quot;customer@exmaple.com&quot; is_two_phase=&quot;no&quot;/&gt;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="PyCardPay.utils.parse_response">
+<tt class="descclassname">PyCardPay.utils.</tt><tt class="descname">parse_response</tt><big>(</big><em>xml</em><big>)</big><a class="headerlink" href="#PyCardPay.utils.parse_response" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse XML from string</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>xml</strong> (<em>str|unicode</em>) &#8211; XML string</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference internal" href="#PyCardPay.exceptions.XMLParsingError" title="PyCardPay.exceptions.XMLParsingError"><tt class="xref py py-class docutils literal"><span class="pre">PyCardPay.exceptions.XMLParsingError</span></tt></a> if lxml failed to parse string</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><tt class="xref py py-class docutils literal"><span class="pre">lxml.etree.Element</span></tt></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="PyCardPay.utils.xml_check_sha512">
+<tt class="descclassname">PyCardPay.utils.</tt><tt class="descname">xml_check_sha512</tt><big>(</big><em>base64_string</em>, <em>sha512</em>, <em>secret</em><big>)</big><a class="headerlink" href="#PyCardPay.utils.xml_check_sha512" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks if returned base64 encoded string is encoded  with our secret password.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>base64_string</strong> (<em>str</em>) &#8211; String encoded with base64.</li>
+<li><strong>sha512</strong> (<em>str</em>) &#8211; SHA512 checksum which must be verified.</li>
+<li><strong>secret</strong> &#8211; Your CardPay secret password.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first">TypeError if specified invalid base64 encoded string.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">bool - True if verified otherwise False</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="PyCardPay.utils.xml_get_sha512">
+<tt class="descclassname">PyCardPay.utils.</tt><tt class="descname">xml_get_sha512</tt><big>(</big><em>xml</em>, <em>secret</em><big>)</big><a class="headerlink" href="#PyCardPay.utils.xml_get_sha512" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates sha512 checksum based on xml + secret</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>xml</strong> (<tt class="xref py py-class docutils literal"><span class="pre">lxml.etree.Element</span></tt>) &#8211; Order XML</li>
+<li><strong>secret</strong> (<em>str|unicode</em>) &#8211; Your CardPay secret password.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first">TypeError if passed not an <tt class="xref py py-class docutils literal"><span class="pre">lxml.etree.Element</span></tt> as xml parameter.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">str &#8211; Calculated SHA512</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="PyCardPay.utils.xml_to_string">
+<tt class="descclassname">PyCardPay.utils.</tt><tt class="descname">xml_to_string</tt><big>(</big><em>xml</em>, <em>encode_base64=True</em><big>)</big><a class="headerlink" href="#PyCardPay.utils.xml_to_string" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns xml as string optionally encoded with base64.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>xml</strong> (<tt class="xref py py-class docutils literal"><span class="pre">lxml.etree.Element</span></tt>) &#8211; Order XML</li>
+<li><strong>encode_base64</strong> (<em>bool</em>) &#8211; Encode result string with base64?</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first">TypeError if passed not an <tt class="xref py py-class docutils literal"><span class="pre">lxml.etree.Element</span></tt> as xml parameter.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">str</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="module-PyCardPay.exceptions">
+<span id="exceptions"></span><h2>Exceptions<a class="headerlink" href="#module-PyCardPay.exceptions" title="Permalink to this headline">¶</a></h2>
+<dl class="exception">
+<dt id="PyCardPay.exceptions.HTTPError">
+<em class="property">exception </em><tt class="descclassname">PyCardPay.exceptions.</tt><tt class="descname">HTTPError</tt><a class="headerlink" href="#PyCardPay.exceptions.HTTPError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Raised when requests.Response.response_code contains value other than 2xx</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="PyCardPay.exceptions.PyCardPayException">
+<em class="property">exception </em><tt class="descclassname">PyCardPay.exceptions.</tt><tt class="descname">PyCardPayException</tt><a class="headerlink" href="#PyCardPay.exceptions.PyCardPayException" title="Permalink to this definition">¶</a></dt>
+<dd><p>Base PyCardPay exception.</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="PyCardPay.exceptions.XMLParsingError">
+<em class="property">exception </em><tt class="descclassname">PyCardPay.exceptions.</tt><tt class="descname">XMLParsingError</tt><a class="headerlink" href="#PyCardPay.exceptions.XMLParsingError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Raised when lxml failed to parse xml from string</p>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="#">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">PyCardPay Documentation</a><ul>
+<li><a class="reference internal" href="#usage-example">Usage example</a></li>
+<li><a class="reference internal" href="#module-PyCardPay.api">CardPayAPI</a></li>
+<li><a class="reference internal" href="#module-PyCardPay.utils">Utils</a></li>
+<li><a class="reference internal" href="#module-PyCardPay.exceptions">Exceptions</a></li>
+</ul>
+</li>
+</ul>
+
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/index.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="#">PyCardPay 0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, Andrey Maslov &lt;greyzmeem@gmail.com&gt;.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+  </body>
+</html>

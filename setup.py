@@ -8,5 +8,9 @@ setup(
     license='',
     author='a.maslov',
     author_email='',
-    description='Python API for CardPay Payment Service'
+    description='Python API for CardPay Payment Service',
+    install_requires=[
+        'lxml',
+        'requests',
+    ],
 )

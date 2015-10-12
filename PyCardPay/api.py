@@ -2,10 +2,10 @@
 from .exceptions import XMLParsingError
 from .utils import xml_to_string, xml_get_sha512, make_http_request, parse_response
 from decimal import Decimal
-from .settings import url_status_change, url_pay, url_status
+from .settings import live_settings
 
 
-def status_change(**kwargs):
+def status_change(settings=live_settings, **kwargs):
     """Change transaction status.
 
     :param id: Transaction id
@@ -46,14 +46,14 @@ def status_change(**kwargs):
     | authorize     | void         |
     +---------------+--------------+
     """
-    r = make_http_request(url_status_change, 'post', **kwargs)
+    r = make_http_request(settings.url_status_change, 'post', **kwargs)
     xml = parse_response(r)
     if xml.get('is_executed') != 'yes':
         return {'is_executed': False, 'details': xml.get('details')}
     return {'is_executed': True, 'details': ''}
 
 
-def status(**kwargs):
+def status(settings=live_settings, **kwargs):
     """Get transactions report
 
     :param client_login: Unique store id. It is the same as for administrative interface.
@@ -93,7 +93,7 @@ def status(**kwargs):
         ]
     }
     """
-    r = make_http_request(url_status, 'post', **kwargs)
+    r = make_http_request(settings.url_status, 'post', **kwargs)
     xml = parse_response(r)
     data = {'is_executed': True, 'details': '', 'orders': []}
 
@@ -113,37 +113,37 @@ def status(**kwargs):
     return data
 
 
-def void(**kwargs):
+def void(settings=live_settings, **kwargs):
     """Change transaction status to "VOID"
 
     :param \*\*kwargs: Parameters that :func:`status_change` takes
     :returns: Result from :func:`status_change`
     """
     kwargs.update({'status_to': 'void'})
-    return status_change(**kwargs)
+    return status_change(settings=settings, **kwargs)
 
 
-def refund(**kwargs):
+def refund(settings=live_settings, **kwargs):
     """Change transaction status to "REFUND"
 
     :param \*\*kwargs: See :func:`status_change` for details
     :returns: Result from :func:`status_change`
     """
     kwargs.update({'status_to': 'refund'})
-    return status_change(**kwargs)
+    return status_change(settings=settings, **kwargs)
 
 
-def capture(**kwargs):
+def capture(settings=live_settings, **kwargs):
     """Change transaction status to "CAPTURE"
 
     :param \*\*kwargs: See :func:`status_change` for details
     :returns: Result from :func:`status_change`
     """
     kwargs.update({'status_to': 'capture'})
-    return status_change(**kwargs)
+    return status_change(settings=settings, **kwargs)
 
 
-def pay(xml, secret):
+def pay(xml, secret, settings=live_settings):
     """Process payment
 
     :param xml: Order XML created with :func:`PyCardPay.utils.order_to_xml`
@@ -193,7 +193,7 @@ def pay(xml, secret):
     """
     order_xml = xml_to_string(xml, encode_base64=True)
     order_sha = xml_get_sha512(xml, secret)
-    r = make_http_request(url_pay, method='post', **{'orderXML': order_xml, 'sha512': order_sha})
+    r = make_http_request(settings.url_pay, method='post', **{'orderXML': order_xml, 'sha512': order_sha})
     r_xml = parse_response(r)
 
     if r_xml.tag == 'order':
@@ -214,7 +214,7 @@ def pay(xml, secret):
     raise XMLParsingError(u'Unknown XML response. Root tag contains no order nor redirect: {}'.format(r))
 
 
-def finish_3ds(MD, PaRes):
+def finish_3ds(MD, PaRes, settings=live_settings):
     """Finish 3Ds authorization.
 
     This method returns the same result as :func:`PyCardPay.api.pay`.
@@ -227,7 +227,7 @@ def finish_3ds(MD, PaRes):
     :returns: dict -- see :func:`PyCardPay.api.pay` for description.
     """
 
-    r = make_http_request(url_pay, method='post', MD=MD, PaRes=PaRes)
+    r = make_http_request(settings.url_pay, method='post', MD=MD, PaRes=PaRes)
     r_xml = parse_response(r)
 
     if r_xml.tag == 'order':

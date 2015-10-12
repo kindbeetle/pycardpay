@@ -2,7 +2,7 @@
 from .exceptions import XMLParsingError
 from .utils import xml_to_string, xml_get_sha512, make_http_request, parse_response
 from decimal import Decimal
-from settings import url_status_change, url_pay, url_status
+from .settings import url_status_change, url_pay, url_status
 
 
 def status_change(**kwargs):

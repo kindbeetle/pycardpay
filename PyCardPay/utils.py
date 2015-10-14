@@ -235,9 +235,9 @@ def make_http_request(url, method='get', **kwargs):
     :returns: HTML content
     """
     try:
-        r = getattr(requests, method)(url, data=kwargs, verify=False)
+        r = getattr(requests, method)(url, data=kwargs, verify=True)
     except AttributeError:
-        r = requests.get(url, data=kwargs, verify=False)
+        r = requests.get(url, data=kwargs, verify=True)
     if 200 < r.status_code < 300:
         raise HTTPError(u'Expected HTTP response code "2xx" but received "{}"'.format(r.status_code))
     return r.content

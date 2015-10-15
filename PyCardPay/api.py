@@ -68,10 +68,8 @@ def status(settings=live_settings, **kwargs):
     :param date_end: (optional) Date before which you want to receive last 10 transactions. Valid format: 'yyyy-MM-dd'
         or 'yyyy-MM-dd HH:mm'.
     :type date_end: str|unicode
-    :param currency: (optional) Is used when store works with multiple currencies. Country code from ISO 3166.
-    :type currency: str|unicode
-    :param order_number: (optional) Transaction number. If one transaction data is needed.
-    :type order_number: int
+    :param number: (optional) Order number. If one transaction data is needed.
+    :type number: str|unicode
     :raises: :class:`PyCardPay.exceptions.XMLParsingError`
     :returns: dict
 
@@ -83,6 +81,7 @@ def status(settings=live_settings, **kwargs):
         'orders': [                                 # Orders list
             {
                 'id': '12345',                      # Transaction ID
+                'orderu_number': '12345',           # Order ID
                 'status_name': 'clearing_success',  # Transaction status
                 'date_in':  '2014-04-28 21:55',     # Payment date
                 'amount': '210',                    # Payment amount
@@ -104,6 +103,7 @@ def status(settings=live_settings, **kwargs):
     for order in xml.xpath('.//orderu'):
         data['orders'].append({
             'id': order.get('id'),
+            'orderu_number': order.get('orderu_number'),
             'status_name': order.get('status_name'),
             'date_in': order.get('date_in'),
             'amount': order.get('amount'),
@@ -152,97 +152,20 @@ def pay(xml, secret, settings=live_settings):
     :type secret: str|unicode
     :raises: TypeError if passed not an :class:`lxml.etree.Element` as xml parameter.
     :raises: :class:`PyCardPay.exceptions.XMLParsingError` if response contains unknown xml structure.
-    :returns: dict -- see below for description
+    :returns: dict
 
-    Returning dict always contains key ``is_3ds_required``. If it set to ``False`` the dict will be:
+    Return dict structure:
 
-    >>> payment_result = PyCardPay.pay(xml, 'YourSecretPassword')
-    >>> print payment_result
-    {
-        'is_3ds_required': False,   # 3Ds authorization **not** required
-        'id': '12345',              # Transaction ID
-        'number': '54321',          # Your order number
-        'status': 'APPROVED',       # Transaction status. May contains values: 'APPROVED', 'DECLINED', 'HOLD'
-        'description': 'Test',      # Status description
+    >>> {
+        'url':  '...',              # URL you need to redirect customer to
     }
-
-    If ``is_3ds_required`` is set to ``True``:
-
-    >>> print payment_result
-    {
-        'is_3ds_required': True,    # 3Ds authorization required
-        'url':  '...',              # URL for which you need to send a POST request
-        'MD': '...',                # MD - data for POST request
-        'PaReq': '...',             # PaReq - data for POST request
-    }
-
-    Then you need to redirect the user to 3Ds authorization page. Sample form:
-
-    >>> form_3ds = [
-        '<form action="{}" method="POST">'.format(payment_result['url']),
-        '<input type="hidden" name="PaReq" value="{}">'.format(payment_result['PaReq']),
-        '<input type="hidden" name="MD" value="{}">'.format(payment_result['MD']),
-        '<input type="hidden" name="TermUrl" value="{}">'.format(callback_page_url),
-        '</form>'
-    ]
-    >> form_3ds = ''.join(form_3ds)
-
-    Where ``callback_page_url`` is your URL to which customer will be returned after the authentication in bank. You
-    will get back POST request with parameter ``PaRes`` - response code from bank. Now you can complete payment with
-    :func:`PyCardPay.api.finish_3ds`
     """
     order_xml = xml_to_string(xml, encode_base64=True)
     order_sha = xml_get_sha512(xml, secret)
     r = make_http_request(settings.url_pay, method='post', **{'orderXML': order_xml, 'sha512': order_sha})
     r_xml = parse_response(r)
-
-    if r_xml.tag == 'order':
-        return {
-            'is_3ds_required': False,
-            'id': r_xml.get('id'),
-            'number': r_xml.get('number'),
-            'status': r_xml.get('status'),
-            'description': r_xml.get('description'),
-        }
     if r_xml.tag == 'redirect':
         return {
-            'is_3ds_required': True,
             'url': r_xml.get('url'),
-            'MD': r_xml.get('MD'),
-            'PaReq': r_xml.get('PaReq'),
         }
-    raise XMLParsingError(u'Unknown XML response. Root tag contains no order nor redirect: {}'.format(r))
-
-
-def finish_3ds(MD, PaRes, settings=live_settings):
-    """Finish 3Ds authorization.
-
-    This method returns the same result as :func:`PyCardPay.api.pay`.
-
-    :param MD: MD value received after payment request from CardPay API.
-    :type MD: str|unicode
-    :param PaRes: Response code from bank after authorization.
-    :type PaRes: str|unicode
-    :raises: :class:`PyCardPay.exceptions.XMLParsingError` if response contains unknown xml structure.
-    :returns: dict -- see :func:`PyCardPay.api.pay` for description.
-    """
-
-    r = make_http_request(settings.url_pay, method='post', MD=MD, PaRes=PaRes)
-    r_xml = parse_response(r)
-
-    if r_xml.tag == 'order':
-        return {
-            'is_3ds_required': False,
-            'id': r_xml.get('id'),
-            'number': r_xml.get('number'),
-            'status': r_xml.get('status'),
-            'description': r_xml.get('description'),
-        }
-    if r_xml.tag == 'redirect':
-        return {
-            'is_3ds_required': True,
-            'url': r_xml.get('url'),
-            'MD': r_xml.get('MD'),
-            'PaReq': r_xml.get('PaReq'),
-        }
-    raise XMLParsingError(u'Unknown XML response. Root tag contains no order nor redirect: {}'.format(r))
+    raise XMLParsingError(u'Unknown XML response. Root tag is not redirect: {}'.format(r))

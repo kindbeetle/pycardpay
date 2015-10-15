@@ -43,10 +43,8 @@ class CardPay:
         :param date_end: (optional) Date before which you want to receive last 10 transactions. Valid format: 'yyyy-MM-dd'
             or 'yyyy-MM-dd HH:mm'.
         :type date_end: str|unicode
-        :param currency: (optional) Is used when store works with multiple currencies. Country code from ISO 3166.
-        :type currency: str|unicode
-        :param order_number: (optional) Transaction number. If one transaction data is needed.
-        :type order_number: int
+        :param number: (optional) Order number. If one transaction data is needed.
+        :type number: str|unicode
         :raises: :class:`PyCardPay.exceptions.XMLParsingError`
         :returns: dict
 
@@ -58,6 +56,7 @@ class CardPay:
             'orders': [                                 # Orders list
                 {
                     'id': '12345',                      # Transaction ID
+                    'orderu_number': '12345',           # Order ID
                     'status_name': 'clearing_success',  # Transaction status
                     'date_in':  '2014-04-28 21:55',     # Payment date
                     'amount': '210',                    # Payment amount
@@ -213,58 +212,13 @@ class CardPay:
             'count': 10,                    # (int) Optional. Number of recurring payments.
         }
 
-        Returning dict always contains key ``is_3ds_required``. If it set to ``False`` the dict will be:
+        Return dict structure:
 
-        >>> payment_result = PyCardPay.pay(xml, 'YourSecretPassword')
-        >>> print payment_result
-        {
-            'is_3ds_required': False,   # 3Ds authorization **not** required
-            'id': '12345',              # Transaction ID
-            'number': '54321',          # Your order number
-            'status': 'APPROVED',       # Transaction status. May contains values: 'APPROVED', 'DECLINED', 'HOLD'
-            'description': 'Test',      # Status description
+        >>> {
+            'url':  '...',              # URL you need to redirect customer to
         }
-
-        If ``is_3ds_required`` is set to ``True``:
-
-        >>> print payment_result
-        {
-            'is_3ds_required': True,    # 3Ds authorization required
-            'url':  '...',              # URL for which you need to send a POST request
-            'MD': '...',                # MD - data for POST request
-            'PaReq': '...',             # PaReq - data for POST request
-        }
-
-        Then you need to redirect the user to 3Ds authorization page. Sample form:
-
-        >>> form_3ds = [
-            '<form action="{}" method="POST">'.format(payment_result['url']),
-            '<input type="hidden" name="PaReq" value="{}">'.format(payment_result['PaReq']),
-            '<input type="hidden" name="MD" value="{}">'.format(payment_result['MD']),
-            '<input type="hidden" name="TermUrl" value="{}">'.format(callback_page_url),
-            '</form>'
-        ]
-        >> form_3ds = ''.join(form_3ds)
-
-        Where ``callback_page_url`` is your URL to which customer will be returned after the authentication in bank. You
-        will get back POST request with parameter ``PaRes`` - response code from bank. Now you can complete payment with
-        :method:`PyCardPay.cardpay.CardPay.finish_3ds`
         """
         order = dict(order, wallet_id=self.wallet_id)
         xml = order_to_xml(order, items=items, billing=billing,
                            shipping=shipping, card=card, recurring=recurring)
         return api.pay(xml, self.secret, settings=self.settings)
-
-    def finish_3ds(self, MD, PaRes):
-        """Finish 3Ds authorization.
-
-        This method returns the same result as :method:`PyCardPay.cardpay.CardPay.pay`.
-
-        :param MD: MD value received after payment request from CardPay API.
-        :type MD: str|unicode
-        :param PaRes: Response code from bank after authorization.
-        :type PaRes: str|unicode
-        :raises: :class:`PyCardPay.exceptions.XMLParsingError` if response contains unknown xml structure.
-        :returns: dict -- see :func:`PyCardPay.api.pay` for description.
-        """
-        return api.finish_3ds(MD, PaRes, settings=self.settings)

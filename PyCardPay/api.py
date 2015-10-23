@@ -1,7 +1,10 @@
 # coding=utf-8
-from .exceptions import XMLParsingError
+from .exceptions import XMLParsingError, JSONParsingError, HTTPError
 from .utils import xml_to_string, xml_get_sha512, make_http_request, parse_response
+import json
+from datetime import datetime
 from decimal import Decimal
+import requests
 from .settings import live_settings
 
 
@@ -169,3 +172,94 @@ def pay(xml, secret, settings=live_settings):
             'url': r_xml.get('url'),
         }
     raise XMLParsingError(u'Unknown XML response. Root tag is not redirect: {}'.format(r))
+
+
+def payouts(wallet_id, client_login, client_password, data, card,
+             settings=live_settings):
+    """Create Payout order.
+
+    :param wallet_id: Unique merchant’s ID used by the CardPay payment system
+    :type wallet_id: int
+    :param client_login: Unique store id. It is the same as for administrative interface
+    :type client_login: str|unicode
+    :param client_password: Store password. It is the same as for administrative interface
+    :type client_password: str|unicode
+    :param data: Order data
+    :type dict
+    :param card: Credit card information
+    :type dict
+    :returns: dict
+
+    Parameters structure:
+
+    >>> data = {
+        "merchantOrderId": "PO01242324",    # (str|unicode) Represents the ID of the order in merchant’s system 
+        "amount": 128,                      # (Decimal) Represents the amount to be transferred to the customer’s card
+        "currency": "USD",                  # (str|unicode) Represents the amount to be transferred to the customer’s card
+        "description": "X-mass gift",       # (str|unicode) Optional. Transaction description
+        "note": "Payout Ref.12345",         # (str|unicode) Optional. Note about the order, not shown to the customer
+        "recipientInfo": "John Smith"       # (str|unicode) Optional. Payout recipient (cardholder) information
+    }
+
+    >>> card = {
+        "number": "4000000000000002",       # (str|unicode) Customer’s card number (PAN). Any valid card number, may contain spaces
+        "expiryMonth": 7,                   # (int) Optional. Customer’s card expiration month. Format: mm
+        "expiryYear": 2019                  # (int) Optional. Customer’s card expiration month. Format: yyyy
+    }
+
+
+    Response structure:
+
+    >>> {
+        "data": {
+            "type": "PAYOUTS",
+            "id": "4ed8991cc11e485c931dcf59387c06b6",
+            "created": "2015-08-28T09:09:53Z",
+            "updated": "2015-08-28T09:09:53Z",
+            "rrn": "000018872019",
+            "merchantOrderId": "PO01242324",
+            "status": "SUCCESS"
+        },
+        "links": {
+            "self": "https://sandbox.cardpay.com/MI/api/v2/payments/4ed8991cc11e485c931dcf59387c06b6"
+        },
+        "meta": {
+            "request": {
+                "type": "PAYOUTS",
+                "timestamp": "2015-08-28T09:09:49Z",
+                "merchantOrderId": "PO01242324",
+                "amount": 128.97,
+                "currency": "USD",
+                "card": {
+                    "number": "4000...0002",
+                    "expiryMonth": 7,
+                    "expiryYear": 2019
+                },
+                "description": "X-mass gift for you, my friend",
+                "note": "Payout Ref.12345",
+                "recipientInfo": "John Smith"
+            },
+            "foo": "bar"
+        }
+    }
+    """
+    ts = datetime.utcnow()
+    request = {
+        'data': dict(
+            data,
+            type = 'PAYOUTS',
+            timestamp = ts.strftime('%Y-%m-%dT%H:%M:%SZ'),
+            amount = str(data['amount']),
+            card = card,
+        ),
+    }
+    r = requests.post(settings.url_payouts,
+                      auth=(client_login, client_password),
+                      params={'walletId': wallet_id}, json=request)
+    if not (200 <= r.status_code < 300):
+        raise HTTPError(u'Expected HTTP response code "200" but received "{}"'.format(r.status_code))
+    try:
+        r_json = json.loads(r.content.decode('utf-8'))
+    except ValueError as e:
+        raise JSONParsingError(u'Failed to parse response from CardPay service: {}'.format(e), r.content)
+    return r_json

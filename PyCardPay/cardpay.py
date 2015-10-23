@@ -27,9 +27,10 @@ class CardPay:
             secret = secret.encode('ascii')
         self.secret = secret
         self.client_login = client_login
+        self.client_password = client_password
         if not isinstance(client_password, bytes):
             client_password = client_password.encode('ascii')
-        self.client_password = hashlib.sha256(client_password).hexdigest()
+        self.client_password_sha256 = hashlib.sha256(client_password).hexdigest()
         self.test = test
         self.settings = test_settings if test else live_settings
 
@@ -68,7 +69,7 @@ class CardPay:
         }
         """
         return api.status(client_login=self.client_login,
-                          client_password=self.client_password,
+                          client_password=self.client_password_sha256,
                           wallet_id=self.wallet_id,
                           settings=self.settings,
                           **kwargs)
@@ -87,7 +88,7 @@ class CardPay:
         >>> {'is_executed': False, 'details': 'Reason'}
         """
         return api.void(id=id, client_login=self.client_login,
-                        client_password=self.client_password,
+                        client_password=self.client_password_sha256,
                         settings=self.settings)
 
     def refund(self, id, reason, amount=None):
@@ -108,7 +109,7 @@ class CardPay:
         """
         kwargs = {} if amount is None else {'amount': amount}
         return api.refund(id=id, reason=reason, client_login=self.client_login,
-                          client_password=self.client_password, 
+                          client_password=self.client_password_sha256, 
                           settings=self.settings, **kwargs)
 
     def capture(self, id):
@@ -125,7 +126,7 @@ class CardPay:
         >>> {'is_executed': False, 'details': 'Reason'}
         """
         return api.capture(id=id, client_login=self.client_login,
-                           client_password=self.client_password,
+                           client_password=self.client_password_sha256,
                            settings=self.settings)
 
     def pay(self, order, items=None, billing=None, shipping=None, card=None,
@@ -222,3 +223,69 @@ class CardPay:
         xml = order_to_xml(order, items=items, billing=billing,
                            shipping=shipping, card=card, recurring=recurring)
         return api.pay(xml, self.secret, settings=self.settings)
+
+    def payouts(self, data, card):
+        """Create Payout order.
+
+        :param data: Order data
+        :type dict
+        :param card: Credit card information
+        :type dict
+        :returns: dict
+
+        Parameters structure:
+
+        >>> data = {
+            "merchantOrderId": "PO01242324",    # (str|unicode) Represents the ID of the order in merchant’s system 
+            "amount": 128,                      # (Decimal) Represents the amount to be transferred to the customer’s card
+            "currency": "USD",                  # (str|unicode) Represents the amount to be transferred to the customer’s card
+            "description": "X-mass gift",       # (str|unicode) Optional. Transaction description
+            "note": "Payout Ref.12345",         # (str|unicode) Optional. Note about the order, not shown to the customer
+            "recipientInfo": "John Smith"       # (str|unicode) Optional. Payout recipient (cardholder) information
+        }
+
+        >>> card = {
+            "number": "4000000000000002",       # (str|unicode) Customer’s card number (PAN). Any valid card number, may contain spaces
+            "expiryMonth": 7,                   # (int) Optional. Customer’s card expiration month. Format: mm
+            "expiryYear": 2019                  # (int) Optional. Customer’s card expiration month. Format: yyyy
+        }
+
+
+        Response structure:
+
+        >>> {
+            "data": {
+                "type": "PAYOUTS",
+                "id": "4ed8991cc11e485c931dcf59387c06b6",
+                "created": "2015-08-28T09:09:53Z",
+                "updated": "2015-08-28T09:09:53Z",
+                "rrn": "000018872019",
+                "merchantOrderId": "PO01242324",
+                "status": "SUCCESS"
+            },
+            "links": {
+                "self": "https://sandbox.cardpay.com/MI/api/v2/payments/4ed8991cc11e485c931dcf59387c06b6"
+            },
+            "meta": {
+                "request": {
+                    "type": "PAYOUTS",
+                    "timestamp": "2015-08-28T09:09:49Z",
+                    "merchantOrderId": "PO01242324",
+                    "amount": 128.97,
+                    "currency": "USD",
+                    "card": {
+                        "number": "4000...0002",
+                        "expiryMonth": 7,
+                        "expiryYear": 2019
+                    },
+                    "description": "X-mass gift for you, my friend",
+                    "note": "Payout Ref.12345",
+                    "recipientInfo": "John Smith"
+                },
+                "foo": "bar"
+            }
+        }
+        """
+        return api.payouts(self.wallet_id, self.client_login,
+                           self.client_password, data=data, card=card,
+                           settings=self.settings)

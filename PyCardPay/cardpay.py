@@ -1,8 +1,11 @@
+import base64
 import hashlib
+from decimal import Decimal
 
 from . import api
-from .utils import order_to_xml
+from .utils import order_to_xml, parse_response
 from .settings import test_settings, live_settings
+from .exceptions import SignatureError
 
 
 class CardPay:
@@ -294,3 +297,67 @@ class CardPay:
         return api.payouts(self.wallet_id, self.client_login,
                            self.client_password, data=data, card=card,
                            settings=self.settings)
+
+    def parse_callback(self, base64_string, sha512):
+        """Checks if returned base64 encoded string is encoded with our secret password and parses it.
+
+        :param base64_string: String encoded with base64.
+        :type base64_string: str
+        :param sha512: SHA512 checksum which must be verified.
+        :type sha512: str
+        :raises: TypeError if specified invalid base64 encoded string.
+        :raises: :class:`PyCardPay.exceptions.SignatureError` if signature is incorrect.
+        :raises: :class:`PyCardPay.exceptions.XMLParsingError` if lxml failed to parse string
+        :returns: dict
+
+        Return dict structure:
+        >>> {
+            'id': 299150,               # ID assigned to the order in CardPay. None is returned when order was cancelled by customer or order was incorrect.
+            'number': '458210',         # Merchant’s ID of the order if it was received from Merchant.
+            'status': 'APPROVED',       # See possible values below.
+            'description': 'CONFIRMED', # CardPay’s message about order’s validation.
+            'date': '15-01-2013 10:30:45', # Date and time when the order was received in DD-MM-YYYY hh:mm:ss format.
+            'customer_id': '11021',     # Customer’s ID in the merchant’s system. Present if was sent with Order.
+            'card_bin': '400000…0000',  # (Or 'card_num') Part of card number. Not present by default, ask your CardPay manager to enable it if needed.
+            'card_holder': 'John Silver', # Name of cardholder. Not present by default, ask your CardPay manager to enable it if needed, Callback URL must be HTTPS.
+            'decline_code': '05',       # Optional code of the decline. Included only when transaction is declined and sending of decline codes is enabled by wallet settings.
+            'approval_code': 'DK3H25',  # Authorization code, provided by bank. Only in case of successful transaction.
+            'is_3d': True,              # Was 3-D Secure authentication made or not.
+            'currency': 'USD',          # Transaction currency as received with order
+            'amount': '21.12',          # Current transaction’s amount as received with order, but can be reduced by refunds later. In case of refund notification this amount is before the refund was made.
+            'recurring_id': '19F0B681E6F74F83AA6AB0162D7BF3A5', # ID of recurring that can be used to continue recurring in future. In case of successful recurring begin.
+            'refunded': '7.04',         # Refund amount in order’s currency. In case of refund notification.
+            'note': 'VIP customer',     # Present if was sent with Order.
+        }
+
+        Status field may have one of these values:
+
+        APPROVED    Transaction successfully completed, amount was captured
+        DECLINED    Transaction denied
+        PENDING     Transaction successfully authorized, but needs some time to be verified, amount was held and can be captured later
+        VOIDED      Transaction was voided (in case of void notification)
+        REFUNDED    Transaction was voided (in case of refund notification)
+        CHARGEBACK  Transaction was voided (in case of chargeback notification)
+        """
+        dec_string = base64.standard_b64decode(base64_string)
+        if hashlib.sha512(dec_string + self.secret).hexdigest() != sha512:
+            raise SignatureError('Incorrect signature')
+        xml = parse_response(dec_string)
+        result = {}
+        for attr in ['id', 'number', 'status', 'description', 'date',
+                     'customer_id', 'card_bin', 'card_num', 'card_holder',
+                     'decline_code', 'approval_code', 'is_3d', 'currency',
+                     'amount', 'recurring_id', 'refunded', 'note']:
+            value = xml.get(attr)
+            if value is not None:
+                if attr == 'id':
+                    if value == '-':
+                        value = None
+                    else:
+                        value = int(value)
+                elif attr == 'is_3d':
+                    value = (value == 'true')
+                elif attr in ['amount', 'refunded']:
+                    value = Decimal(value)
+                result[attr] = value
+        return result

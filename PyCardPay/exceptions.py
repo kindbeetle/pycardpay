@@ -17,6 +17,10 @@ class JSONParsingError(ParsingError):
     """Raised when failed to parse json from string"""
     pass
 
+class SignatureError(PyCardPayException):
+    """Raised when signature doesn't match response"""
+    pass
+
 class HTTPError(PyCardPayException):
     """Raised when requests.Response.response_code contains value other than 2xx"""
     pass

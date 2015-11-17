@@ -1,7 +1,5 @@
 # coding=utf-8
 from .exceptions import HTTPError, XMLParsingError
-from lxml import etree
-from lxml.builder import E
 import base64
 import codecs
 import datetime as dt

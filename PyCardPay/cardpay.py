@@ -313,10 +313,11 @@ class CardPay:
         Return dict structure:
         >>> {
             'id': 299150,               # ID assigned to the order in CardPay. None is returned when order was cancelled by customer or order was incorrect.
+            'refund_id': 299151,        # ID assigned to the refund in CardPay. Only for refund.
             'number': '458210',         # Merchant’s ID of the order if it was received from Merchant.
             'status': 'APPROVED',       # See possible values below.
             'description': 'CONFIRMED', # CardPay’s message about order’s validation.
-            'date': '15-01-2013 10:30:45', # Date and time when the order was received in DD-MM-YYYY hh:mm:ss format.
+            'date': '15-01-2013 10:30:45', # Format DD-MM-YYYY hh:mm:ss. For order: date and time when the order was received. For refund: date and time when the refund was received.
             'customer_id': '11021',     # Customer’s ID in the merchant’s system. Present if was sent with Order.
             'card_bin': '400000…0000',  # (Or 'card_num') Part of card number. Not present by default, ask your CardPay manager to enable it if needed.
             'card_holder': 'John Silver', # Name of cardholder. Not present by default, ask your CardPay manager to enable it if needed, Callback URL must be HTTPS.
@@ -344,13 +345,13 @@ class CardPay:
             raise SignatureError('Incorrect signature')
         xml = parse_response(dec_string)
         result = {}
-        for attr in ['id', 'number', 'status', 'description', 'date',
-                     'customer_id', 'card_bin', 'card_num', 'card_holder',
-                     'decline_code', 'approval_code', 'is_3d', 'currency',
-                     'amount', 'recurring_id', 'refunded', 'note']:
+        for attr in ['id', 'refund_id', 'number', 'status', 'description',
+                     'date', 'customer_id', 'card_bin', 'card_num',
+                     'card_holder', 'decline_code', 'approval_code', 'is_3d',
+                     'currency', 'amount', 'recurring_id', 'refunded', 'note']:
             value = xml.get(attr)
             if value is not None:
-                if attr == 'id':
+                if attr in ['id', 'refund_id']:
                     if value == '-':
                         value = None
                     else:

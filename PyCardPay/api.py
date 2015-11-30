@@ -208,7 +208,7 @@ def payouts(wallet_id, client_login, client_password, data, card,
     }
 
 
-    Response structure:
+    Response structure on success:
 
     >>> {
         "data": {
@@ -242,6 +242,21 @@ def payouts(wallet_id, client_login, client_password, data, card,
             "foo": "bar"
         }
     }
+
+    Response structure on error:
+
+    >>> {
+        "errors": [
+            {
+                "status": "400",
+                "source": {
+                    "pointer": "/data/card/number"
+                },
+                "title": "Invalid Attribute",
+                "detail": "invalid credit card number"
+            }
+        ]
+    }
     """
     ts = datetime.utcnow()
     request = {
@@ -256,7 +271,7 @@ def payouts(wallet_id, client_login, client_password, data, card,
     r = requests.post(settings.url_payouts,
                       auth=(client_login, client_password),
                       params={'walletId': wallet_id}, json=request)
-    if not (200 <= r.status_code < 300):
+    if r.status_code not in [200, 400]:
         raise HTTPError(u'Expected HTTP response code "200" but received "{}"'.format(r.status_code),
                         method='POST', url=settings.url_payouts, data=request, response=r)
     try:

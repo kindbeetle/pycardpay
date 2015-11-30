@@ -259,7 +259,7 @@ class CardPay:
         }
 
 
-        Response structure:
+        Response structure on success:
 
         >>> {
             "data": {
@@ -292,6 +292,21 @@ class CardPay:
                 },
                 "foo": "bar"
             }
+        }
+
+        Response structure on error:
+
+        >>> {
+            "errors": [
+                {
+                    "status": "400",
+                    "source": {
+                        "pointer": "/data/card/number"
+                    },
+                    "title": "Invalid Attribute",
+                    "detail": "invalid credit card number"
+                }
+            ]
         }
         """
         return api.payouts(self.wallet_id, self.client_login,

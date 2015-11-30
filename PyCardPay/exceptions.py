@@ -23,4 +23,10 @@ class SignatureError(PyCardPayException):
 
 class HTTPError(PyCardPayException):
     """Raised when requests.Response.response_code contains value other than 2xx"""
-    pass
+    def __init__(self, msg, method=None, url=None, data=None, response=None):
+        self.msg = msg
+        self.method = method
+        self.url = url
+        self.data = data
+        self.response = response
+        super(HTTPError, self).__init__(msg)

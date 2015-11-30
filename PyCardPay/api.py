@@ -257,7 +257,8 @@ def payouts(wallet_id, client_login, client_password, data, card,
                       auth=(client_login, client_password),
                       params={'walletId': wallet_id}, json=request)
     if not (200 <= r.status_code < 300):
-        raise HTTPError(u'Expected HTTP response code "200" but received "{}"'.format(r.status_code))
+        raise HTTPError(u'Expected HTTP response code "200" but received "{}"'.format(r.status_code),
+                        method='POST', url=settings.url_payouts, data=request, response=r)
     try:
         r_json = json.loads(r.content.decode('utf-8'))
     except ValueError as e:

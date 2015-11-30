@@ -254,5 +254,6 @@ def make_http_request(url, method='get', **kwargs):
     except AttributeError:
         r = requests.get(url, data=kwargs, verify=True)
     if not (200 <= r.status_code < 300):
-        raise HTTPError(u'Expected HTTP response code "2xx" but received "{}"'.format(r.status_code))
+        raise HTTPError(u'Expected HTTP response code "2xx" but received "{}"'.format(r.status_code),
+                        method=method, url=url, data=kwargs, response=r)
     return r.content

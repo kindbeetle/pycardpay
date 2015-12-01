@@ -4,9 +4,12 @@ class PyCardPayException(Exception):
 
 
 class ParsingError(PyCardPayException):
-    def __init__(self, msg, content=None):
-        self.content = content
+    def __init__(self, msg, method=None, url=None, data=None, content=None):
         self.msg = msg
+        self.method = method
+        self.url = url
+        self.data = data
+        self.content = content
         super(ParsingError, self).__init__(msg)
 
 class XMLParsingError(ParsingError):

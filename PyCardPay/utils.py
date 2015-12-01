@@ -1,5 +1,4 @@
 # coding=utf-8
-from .exceptions import HTTPError, XMLParsingError
 import base64
 import codecs
 import datetime as dt
@@ -235,7 +234,7 @@ def parse_response(xml):
     try:
         return etree.fromstring(xml)
     except etree.Error as e:
-        raise XMLParsingError(u'Failed to parse response from CardPay service: {}'.format(e), xml)
+        raise XMLParsingError(u'Failed to parse response from CardPay service: {}'.format(e), content=xml)
 
 
 def make_http_request(url, method='get', **kwargs):
@@ -257,3 +256,23 @@ def make_http_request(url, method='get', **kwargs):
         raise HTTPError(u'Expected HTTP response code "2xx" but received "{}"'.format(r.status_code),
                         method=method, url=url, data=kwargs, response=r)
     return r.content
+
+
+def xml_http_request(url, method='get', **kwargs):
+    """Make http get request to *url* passing *kwargs* as arguments
+
+    :param url: Request url
+    :type url: str|unicode
+    :param method: HTTP method
+    :type method: str|unicode
+    :param \*\*kwargs: Request parameters
+    :raises: :class:`PyCardPay.exceptions.HTTPError` if server returns status code different from 2xx
+    :raises: :class:`PyCardPay.exceptions.XMLParsingError` if lxml failed to parse string
+    :returns: :class:`lxml.etree.Element`
+    """
+    xml = make_http_request(url, method=method, **kwargs)
+    try:
+        return etree.fromstring(xml)
+    except etree.Error as e:
+        raise XMLParsingError(u'Failed to parse response from CardPay service: {}'.format(e),
+                              method=method, url=url, data=kwargs, content=xml)

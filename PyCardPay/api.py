@@ -1,6 +1,6 @@
 # coding=utf-8
 from .exceptions import XMLParsingError, JSONParsingError, HTTPError
-from .utils import xml_to_string, xml_get_sha512, make_http_request, parse_response
+from .utils import xml_to_string, xml_get_sha512, xml_http_request
 import json
 from datetime import datetime
 from decimal import Decimal
@@ -49,8 +49,7 @@ def status_change(settings=live_settings, **kwargs):
     | authorize     | void         |
     +---------------+--------------+
     """
-    r = make_http_request(settings.url_status_change, 'post', **kwargs)
-    xml = parse_response(r)
+    xml = xml_http_request(settings.url_status_change, 'post', **kwargs)
     if xml.get('is_executed') != 'yes':
         return {'is_executed': False, 'details': xml.get('details')}
     return {'is_executed': True, 'details': ''}
@@ -95,8 +94,7 @@ def status(settings=live_settings, **kwargs):
         ]
     }
     """
-    r = make_http_request(settings.url_status, 'post', **kwargs)
-    xml = parse_response(r)
+    xml = xml_http_request(settings.url_status, 'post', **kwargs)
     data = {'is_executed': True, 'details': '', 'orders': []}
 
     if xml.get('is_executed') != 'yes':
@@ -165,13 +163,14 @@ def pay(xml, secret, settings=live_settings):
     """
     order_xml = xml_to_string(xml, encode_base64=True)
     order_sha = xml_get_sha512(xml, secret)
-    r = make_http_request(settings.url_pay, method='post', **{'orderXML': order_xml, 'sha512': order_sha})
-    r_xml = parse_response(r)
+    data = {'orderXML': order_xml, 'sha512': order_sha}
+    r_xml = xml_http_request(settings.url_pay, method='post', **data)
     if r_xml.tag == 'redirect':
         return {
             'url': r_xml.get('url'),
         }
-    raise XMLParsingError(u'Unknown XML response. Root tag is not redirect: {}'.format(r))
+    raise XMLParsingError(u'Unknown XML response. Root tag is not redirect: {}'.format(r),
+                          method='post', url=settings.url_pay, data=data, content=r_xml)
 
 
 def payouts(wallet_id, client_login, client_password, data, card,
@@ -277,5 +276,6 @@ def payouts(wallet_id, client_login, client_password, data, card,
     try:
         r_json = json.loads(r.content.decode('utf-8'))
     except ValueError as e:
-        raise JSONParsingError(u'Failed to parse response from CardPay service: {}'.format(e), r.content)
+        raise JSONParsingError(u'Failed to parse response from CardPay service: {}'.format(e),
+                               method='POST', url=settings.url_payouts, data=request, content=r.content)
     return r_json

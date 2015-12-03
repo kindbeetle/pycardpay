@@ -169,7 +169,7 @@ def pay(xml, secret, settings=live_settings):
         return {
             'url': r_xml.get('url'),
         }
-    raise XMLParsingError(u'Unknown XML response. Root tag is not redirect: {}'.format(r),
+    raise XMLParsingError(u'Unknown XML response. Root tag is not redirect: {}'.format(r_xml.tag),
                           method='post', url=settings.url_pay, data=data, content=r_xml)
 
 

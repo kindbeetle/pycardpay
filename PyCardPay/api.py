@@ -1,7 +1,10 @@
 # coding=utf-8
 from .exceptions import XMLParsingError, JSONParsingError, HTTPError
-from .utils import xml_to_string, xml_get_sha512, xml_http_request
+from .utils import (
+    xml_to_string, xml_get_sha512, make_http_request, xml_http_request,
+)
 import json
+from lxml import etree
 from datetime import datetime
 from decimal import Decimal
 import requests
@@ -164,13 +167,18 @@ def pay(xml, secret, settings=live_settings):
     order_xml = xml_to_string(xml, encode_base64=True)
     order_sha = xml_get_sha512(xml, secret)
     data = {'orderXML': order_xml, 'sha512': order_sha}
-    r_xml = xml_http_request(settings.url_pay, method='post', **data)
+    r = make_http_request(settings.url_pay, method='post', **data)
+    try:
+        r_xml = etree.fromstring(r)
+    except etree.Error as e:
+        raise XMLParsingError(u'Failed to parse response from CardPay service: {}'.format(e),
+                              method='post', url=settings.url_pay, data=data, content=r)
     if r_xml.tag == 'redirect':
         return {
             'url': r_xml.get('url'),
         }
     raise XMLParsingError(u'Unknown XML response. Root tag is not redirect: {}'.format(r_xml.tag),
-                          method='post', url=settings.url_pay, data=data, content=r_xml)
+                          method='post', url=settings.url_pay, data=data, content=r)
 
 
 def payouts(wallet_id, client_login, client_password, data, card,

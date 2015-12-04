@@ -2,11 +2,11 @@
 from .exceptions import XMLParsingError, JSONParsingError, HTTPError
 from .utils import (
     xml_to_string, xml_get_sha512, make_http_request, xml_http_request,
+    parse_order,
 )
 import json
 from lxml import etree
 from datetime import datetime
-from decimal import Decimal
 import requests
 from .settings import live_settings
 
@@ -177,7 +177,9 @@ def pay(xml, secret, settings=live_settings):
         return {
             'url': r_xml.get('url'),
         }
-    raise XMLParsingError(u'Unknown XML response. Root tag is not redirect: {}'.format(r_xml.tag),
+    elif r_xml.tag == 'order':
+        return parse_order(r_xml)
+    raise XMLParsingError(u'Unknown XML response. Root tag is neither redirect nor order: {}'.format(r_xml.tag),
                           method='post', url=settings.url_pay, data=data, content=r)
 
 

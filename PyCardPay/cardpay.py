@@ -1,9 +1,8 @@
 import base64
 import hashlib
-from decimal import Decimal
 
 from . import api
-from .utils import order_to_xml, parse_response
+from .utils import order_to_xml, parse_response, parse_order
 from .settings import test_settings, live_settings
 from .exceptions import SignatureError
 
@@ -359,21 +358,4 @@ class CardPay:
         if hashlib.sha512(dec_string + self.secret).hexdigest() != sha512:
             raise SignatureError('Incorrect signature')
         xml = parse_response(dec_string)
-        result = {}
-        for attr in ['id', 'refund_id', 'number', 'status', 'description',
-                     'date', 'customer_id', 'card_bin', 'card_num',
-                     'card_holder', 'decline_code', 'approval_code', 'is_3d',
-                     'currency', 'amount', 'recurring_id', 'refunded', 'note']:
-            value = xml.get(attr)
-            if value is not None:
-                if attr in ['id', 'refund_id']:
-                    if value == '-':
-                        value = None
-                    else:
-                        value = int(value)
-                elif attr == 'is_3d':
-                    value = (value == 'true')
-                elif attr in ['amount', 'refunded']:
-                    value = Decimal(value)
-                result[attr] = value
-        return result
+        return parse_order(xml)

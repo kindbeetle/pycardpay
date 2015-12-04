@@ -3,6 +3,7 @@ import base64
 import codecs
 import datetime as dt
 import hashlib
+from decimal import Decimal
 
 from lxml import etree
 from lxml.builder import E
@@ -276,3 +277,31 @@ def xml_http_request(url, method='get', **kwargs):
     except etree.Error as e:
         raise XMLParsingError(u'Failed to parse response from CardPay service: {}'.format(e),
                               method=method, url=url, data=kwargs, content=xml)
+
+
+def parse_order(xml):
+    """Converts Order XML to dictionary
+
+    :param xml: Order XML
+    :type xml: :class:`lxml.etree.Element`
+    :returns: dict
+    """
+    result = {}
+    for attr in ['id', 'refund_id', 'number', 'status', 'description',
+                 'date', 'customer_id', 'card_bin', 'card_num',
+                 'card_holder', 'decline_code', 'decline_reason',
+                 'approval_code', 'is_3d', 'currency', 'amount',
+                 'recurring_id', 'refunded', 'note']:
+        value = xml.get(attr)
+        if value is not None:
+            if attr in ['id', 'refund_id']:
+                if value == '-':
+                    value = None
+                else:
+                    value = int(value)
+            elif attr == 'is_3d':
+                value = (value == 'true')
+            elif attr in ['amount', 'refunded']:
+                value = Decimal(value)
+            result[attr] = value
+    return result

@@ -335,6 +335,7 @@ class CardPay:
             'customer_id': '11021',     # Customer’s ID in the merchant’s system. Present if was sent with Order.
             'card_bin': '400000…0000',  # (Or 'card_num') Part of card number. Not present by default, ask your CardPay manager to enable it if needed.
             'card_holder': 'John Silver', # Name of cardholder. Not present by default, ask your CardPay manager to enable it if needed, Callback URL must be HTTPS.
+            'decline_reason': 'Insufficient funds', # Bank’s message about order’s decline reason. When transaction was declined.
             'decline_code': '05',       # Optional code of the decline. Included only when transaction is declined and sending of decline codes is enabled by wallet settings.
             'approval_code': 'DK3H25',  # Authorization code, provided by bank. Only in case of successful transaction.
             'is_3d': True,              # Was 3-D Secure authentication made or not.

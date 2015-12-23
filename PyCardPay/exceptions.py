@@ -33,3 +33,6 @@ class HTTPError(PyCardPayException):
         self.data = data
         self.response = response
         super(HTTPError, self).__init__(msg)
+
+class TransactionNotFound(PyCardPayException):
+    pass

@@ -1,10 +1,16 @@
 # coding=utf-8
-from .exceptions import XMLParsingError, JSONParsingError, HTTPError
+from .exceptions import (
+    XMLParsingError, JSONParsingError, HTTPError, TransactionNotFound,
+)
 from .utils import (
     xml_to_string, xml_get_sha512, make_http_request, xml_http_request,
     parse_order,
 )
 import json
+try:
+    from urllib import urlencode
+except ImportError:
+    from urllib.parse import urlencode
 from lxml import etree
 from datetime import datetime
 import requests
@@ -184,7 +190,7 @@ def pay(xml, secret, settings=live_settings):
 
 
 def payouts(wallet_id, client_login, client_password, data, card,
-             settings=live_settings):
+            settings=live_settings):
     """Create Payout order.
 
     :param wallet_id: Unique merchant’s ID used by the CardPay payment system
@@ -277,15 +283,115 @@ def payouts(wallet_id, client_login, client_password, data, card,
             card = card,
         ),
     }
-    r = requests.post(settings.url_payouts,
-                      auth=(client_login, client_password),
-                      params={'walletId': wallet_id}, json=request)
+    url = settings.url_payouts + '?' + urlencode({'walletId': wallet_id})
+    r = requests.post(url, json=request, auth=(client_login, client_password))
     if not (200 <= r.status_code < 300) and r.status_code not in (400, 500):
         raise HTTPError(u'Expected HTTP response code "200" but received "{}"'.format(r.status_code),
-                        method='POST', url=settings.url_payouts, data=request, response=r)
+                        method='POST', url=url, data=request, response=r)
     try:
         r_json = json.loads(r.content.decode('utf-8'))
     except ValueError as e:
         raise JSONParsingError(u'Failed to parse response from CardPay service: {}'.format(e),
-                               method='POST', url=settings.url_payouts, data=request, content=r.content)
+                               method='POST', url=url, data=request, content=r.content)
+    return r_json
+
+
+def payments(client_login, client_password, start_millis, end_millis,
+             wallet_id=None, max_count=None, settings=live_settings):
+    """Get the list of orders for a period of time. This service will return only orders available for this user to be seen.
+
+    :param client_login: Unique store id. It is the same as for administrative interface
+    :type client_login: str|unicode
+    :param client_password: Store password. It is the same as for administrative interface
+    :type client_password: str|unicode
+    :param start_millis: Epoch time in milliseconds when requested period starts (inclusive)
+    :type start_millis: int
+    :param end_millis: Epoch time in milliseconds when requested period ends (not inclusive), must be less than 7 days after period start
+    :type end_millis: int
+    :param wallet_id: (optional) Limit result with single WebSite orders
+    :type wallet_id: int
+    :param max_count: (optional) Limit number of returned orders, must be less than default 10000
+    :type max_count: int
+    :raises: :class:`PyCardPay.exceptions.HTTPError`, :class:`PyCardPay.exceptions.JSONParsingError`
+    :returns: dict
+
+    Return dict structure:
+
+    >>> {
+        'data': [
+            {
+                'id': '299150',         # ID assigned to the order in CardPay
+                'number': 'order00017', # Merchant’s ID of the order
+                'state': 'COMPLETED',   # Payment State
+                'date': 1438336812000,  # Epoch time when this payment started
+                'customerId': '11021',  # Customer’s ID in the merchant’s system
+                'declineReason': 'Cancelled by customer', # Bank’s message about order’s decline reason
+                'declineCode': '02',    # Code of the decline
+                'authCode': 'DK3H25',   # Authorization code, provided by bank
+                'is3d': True,           # Was 3-D Secure authentication made or not
+                'currency': 'USD',      # Transaction currency
+                'amount': '21.12',      # Initial order amount
+                'refundedAmount': '7.04', # Refund amount in order’s currency
+                'note': 'VIP customer', # Note about the order
+                'email': 'customer@example.com', # Customer’s e-mail address
+            },
+            ...
+        ],
+        'hasMore': True     # Indicates if there are more orders for this period than was returned
+    }
+    """
+    params = {
+        'startMillis': int(start_millis),
+        'endMillis': int(end_millis),
+    }
+    if wallet_id is not None:
+        params['walletId'] = wallet_id
+    if max_count is not None:
+        params['maxCount'] = max_count
+    url = settings.url_payments + '?' + urlencode(params)
+    r = requests.get(url, auth=(client_login, client_password))
+    if r.status_code != 200:
+        raise HTTPError(u'Expected HTTP response code "200" but received "{}"'.format(r.status_code),
+                        method='GET', url=url, response=r)
+    try:
+        r_json = json.loads(r.content.decode('utf-8'))
+    except ValueError as e:
+        raise JSONParsingError(u'Failed to parse response from CardPay service: {}'.format(e),
+                               method='GET', url=url, content=r.content)
+    return r_json
+
+
+def payment(id, client_login, client_password, settings=live_settings):
+    """Use this call to get the status of the payment by it’s id.
+
+    :param id: Transaction id
+    :type id: int
+    :raises: :class:`PyCardPay.exceptions.HTTPError`, :class:`PyCardPay.exceptions.JSONParsingError`, :class:`PyCardPay.exceptions.TransactionNotFound`
+    :returns: dict
+
+    Return dict structure:
+
+    >>> {
+        "data": {
+            "type": "PAYMENTS",
+            "id": "12347",
+            "created": "2015-08-28T09:09:53Z",
+            "updated": "2015-08-28T09:09:53Z",
+            "state": "COMPLETED",
+            "merchantOrderId": "955987"
+        }
+    }
+    """
+    url = settings.url_payments + '/' + str(id)
+    r = requests.get(url, auth=(client_login, client_password))
+    if r.status_code == 404:
+        raise TransactionNotFound('Payment with ID {} is not found'.format(id))
+    elif r.status_code != 200:
+        raise HTTPError(u'Expected HTTP response code "200" but received "{}"'.format(r.status_code),
+                        method='GET', url=url, response=r)
+    try:
+        r_json = json.loads(r.content.decode('utf-8'))
+    except ValueError as e:
+        raise JSONParsingError(u'Failed to parse response from CardPay service: {}'.format(e),
+                               method='GET', url=url, content=r.content)
     return r_json

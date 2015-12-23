@@ -7,6 +7,7 @@ Settings = namedtuple(
         'url_status',
         'url_pay',
         'url_payouts',
+        'url_payments',
     ],
 )
 
@@ -16,6 +17,7 @@ test_settings = Settings(
     url_status = 'https://sandbox.cardpay.com/MI/service/order-report',
     url_status_change = 'https://sandbox.cardpay.com/MI/service/order-change-status',
     url_payouts = 'https://sandbox.cardpay.com/MI/api/v2/payouts',
+    url_payments = 'https://sandbox.cardpay.com/MI/api/v2/payments',
 )
 
 live_settings = Settings(
@@ -23,4 +25,5 @@ live_settings = Settings(
     url_status = 'https://cardpay.com/MI/service/order-report',
     url_status_change = 'https://cardpay.com/MI/service/order-change-status',
     url_payouts = 'https://cardpay.com/MI/api/v2/payouts',
+    url_payments = 'https://cardpay.com/MI/api/v2/payments',
 )

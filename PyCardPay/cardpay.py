@@ -312,6 +312,74 @@ class CardPay:
                            self.client_password, data=data, card=card,
                            settings=self.settings)
 
+    def payments(self, start_millis, end_millis, wallet_id=None, max_count=None):
+        """Get the list of orders for a period of time. This service will return only orders available for this user to be seen.
+
+        :param start_millis: Epoch time in milliseconds when requested period starts (inclusive)
+        :type start_millis: int
+        :param end_millis: Epoch time in milliseconds when requested period ends (not inclusive), must be less than 7 days after period start
+        :type end_millis: int
+        :param wallet_id: (optional) Limit result with single WebSite orders
+        :type wallet_id: int
+        :param max_count: (optional) Limit number of returned orders, must be less than default 10000
+        :type max_count: int
+        :raises: :class:`PyCardPay.exceptions.HTTPError`, :class:`PyCardPay.exceptions.JSONParsingError`
+        :returns: dict
+
+        Return dict structure:
+
+        >>> {
+            'data': [
+                {
+                    'id': '299150',         # ID assigned to the order in CardPay
+                    'number': 'order00017', # Merchant’s ID of the order
+                    'state': 'COMPLETED',   # Payment State
+                    'date': 1438336812000,  # Epoch time when this payment started
+                    'customerId': '11021',  # Customer’s ID in the merchant’s system
+                    'declineReason': 'Cancelled by customer', # Bank’s message about order’s decline reason
+                    'declineCode': '02',    # Code of the decline
+                    'authCode': 'DK3H25',   # Authorization code, provided by bank
+                    'is3d': True,           # Was 3-D Secure authentication made or not
+                    'currency': 'USD',      # Transaction currency
+                    'amount': '21.12',      # Initial order amount
+                    'refundedAmount': '7.04', # Refund amount in order’s currency
+                    'note': 'VIP customer', # Note about the order
+                    'email': 'customer@example.com', # Customer’s e-mail address
+                },
+                ...
+            ],
+            'hasMore': True     # Indicates if there are more orders for this period than was returned
+        }
+        """
+        return api.payments(self.client_login, self.client_password,
+                            start_millis=start_millis, end_millis=end_millis,
+                            wallet_id=self.wallet_id, max_count=max_count,
+                            settings=self.settings)
+
+    def payment(self, id):
+        """Use this call to get the status of the payment by it’s id.
+
+        :param id: Transaction id
+        :type id: int
+        :raises: :class:`PyCardPay.exceptions.HTTPError`, :class:`PyCardPay.exceptions.JSONParsingError`, :class:`PyCardPay.exceptions.TransactionNotFound`
+        :returns: dict
+
+        Return dict structure:
+
+        >>> {
+            "data": {
+                "type": "PAYMENTS",
+                "id": "12347",
+                "created": "2015-08-28T09:09:53Z",
+                "updated": "2015-08-28T09:09:53Z",
+                "state": "COMPLETED",
+                "merchantOrderId": "955987"
+            }
+        }
+        """
+        return api.payment(id, self.client_login, self.client_password,
+                           settings=self.settings)
+
     def parse_callback(self, base64_string, sha512):
         """Checks if returned base64 encoded string is encoded with our secret password and parses it.
 

@@ -312,7 +312,8 @@ class CardPay:
                            self.client_password, data=data, card=card,
                            settings=self.settings)
 
-    def payments(self, start_millis, end_millis, wallet_id=None, max_count=None):
+    def list_payments(self, start_millis, end_millis, wallet_id=None,
+                      max_count=None):
         """Get the list of orders for a period of time. This service will return only orders available for this user to be seen.
 
         :param start_millis: Epoch time in milliseconds when requested period starts (inclusive)
@@ -351,12 +352,12 @@ class CardPay:
             'hasMore': True     # Indicates if there are more orders for this period than was returned
         }
         """
-        return api.payments(self.client_login, self.client_password,
-                            start_millis=start_millis, end_millis=end_millis,
-                            wallet_id=self.wallet_id, max_count=max_count,
-                            settings=self.settings)
+        return api.list_payments(self.client_login, self.client_password,
+                                 start_millis=start_millis, end_millis=end_millis,
+                                 wallet_id=self.wallet_id, max_count=max_count,
+                                 settings=self.settings)
 
-    def payment_status(self, id):
+    def payments_status(self, id):
         """Use this call to get the status of the payment by it’s id.
 
         :param id: Transaction id
@@ -377,10 +378,11 @@ class CardPay:
             }
         }
         """
-        return api.payment_status(id, self.client_login, self.client_password,
-                                  settings=self.settings)
+        return api.payments_status(id, self.client_login, self.client_password,
+                                   settings=self.settings)
 
-    def refunds(self, start_millis, end_millis, wallet_id=None, max_count=None):
+    def list_refunds(self, start_millis, end_millis, wallet_id=None,
+                     max_count=None):
         """Get the list of refunds for a period of time. This service will return only orders available for this user to be seen.
 
         :param start_millis: Epoch time in milliseconds when requested period starts (inclusive)
@@ -407,6 +409,7 @@ class CardPay:
                     "is3d": False,
                     "currency": "EUR",
                     "amount": 14.14,
+                    "customerId": "123",
                     "email": "test1@example.com",
                     "originalOrderId": "12350"
                 },
@@ -415,12 +418,12 @@ class CardPay:
             'hasMore': True     # Indicates if there are more orders for this period than was returned
         }
         """
-        return api.refunds(self.client_login, self.client_password,
-                           start_millis=start_millis, end_millis=end_millis,
-                            wallet_id=self.wallet_id, max_count=max_count,
-                            settings=self.settings)
+        return api.list_refunds(self.client_login, self.client_password,
+                                start_millis=start_millis, end_millis=end_millis,
+                                wallet_id=self.wallet_id, max_count=max_count,
+                                settings=self.settings)
 
-    def refund_status(self, id):
+    def refunds_status(self, id):
         """Use this call to get the status of the refund by it’s id.
 
         :param id: Transaction id
@@ -441,8 +444,71 @@ class CardPay:
             }
         }
         """
-        return api.refund_status(id, self.client_login, self.client_password,
-                                 settings=self.settings)
+        return api.refunds_status(id, self.client_login, self.client_password,
+                                  settings=self.settings)
+
+    def list_payouts(self, start_millis, end_millis, wallet_id=None,
+                     max_count=None):
+        """Get the list of payouts for a period of time. This service will return only orders available for this user to be seen.
+
+        :param start_millis: Epoch time in milliseconds when requested period starts (inclusive)
+        :type start_millis: int
+        :param end_millis: Epoch time in milliseconds when requested period ends (not inclusive), must be less than 7 days after period start
+        :type end_millis: int
+        :param wallet_id: (optional) Limit result with single WebSite orders
+        :type wallet_id: int
+        :param max_count: (optional) Limit number of returned orders, must be less than default 10000
+        :type max_count: int
+        :raises: :class:`PyCardPay.exceptions.HTTPError`, :class:`PyCardPay.exceptions.JSONParsingError`
+        :returns: dict
+
+        Return dict structure:
+
+        >>> {
+            'data': [
+                {
+                    "id": "12348",
+                    "number": "949225",
+                    "state": "COMPLETED",
+                    "date": 1444648088000,
+                    "is3d": False,
+                    "currency": "EUR",
+                    "amount": 14.14,
+                    "number": "12350"
+                },
+                ...
+            ],
+            'hasMore': True     # Indicates if there are more orders for this period than was returned
+        }
+        """
+        return api.list_payouts(self.client_login, self.client_password,
+                                start_millis=start_millis, end_millis=end_millis,
+                                wallet_id=self.wallet_id, max_count=max_count,
+                                settings=self.settings)
+
+    def payouts_status(self, id):
+        """Use this call to get the status of the payout by it’s id.
+
+        :param id: Transaction id
+        :type id: int
+        :raises: :class:`PyCardPay.exceptions.HTTPError`, :class:`PyCardPay.exceptions.JSONParsingError`, :class:`PyCardPay.exceptions.TransactionNotFound`
+        :returns: dict
+
+        Return dict structure:
+
+        >>> {
+            "data": {
+                "type": "PAYOUTS",
+                "id": "12352",
+                "created": "2015-10-12T12:34:02Z",
+                "updated": "2015-10-12T12:34:02Z",
+                "state": "COMPLETED",
+                "merchantOrderId": "890081"
+            }
+        }
+        """
+        return api.payouts_status(id, self.client_login, self.client_password,
+                                  settings=self.settings)
 
     def parse_callback(self, base64_string, sha512):
         """Checks if returned base64 encoded string is encoded with our secret password and parses it.

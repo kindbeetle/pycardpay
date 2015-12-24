@@ -296,8 +296,97 @@ def payouts(wallet_id, client_login, client_password, data, card,
     return r_json
 
 
-def payments(client_login, client_password, start_millis, end_millis,
-             wallet_id=None, max_count=None, settings=live_settings):
+def _list(base_url, client_login, client_password, start_millis, end_millis,
+          wallet_id=None, max_count=None):
+    """Get the list of orders for a period of time. This service will return only orders available for this user to be seen.
+
+    :param base_url: Base API URL to send request to
+    :type base_url: str|unicode
+    :param client_login: Unique store id. It is the same as for administrative interface
+    :type client_login: str|unicode
+    :param client_password: Store password. It is the same as for administrative interface
+    :type client_password: str|unicode
+    :param start_millis: Epoch time in milliseconds when requested period starts (inclusive)
+    :type start_millis: int
+    :param end_millis: Epoch time in milliseconds when requested period ends (not inclusive), must be less than 7 days after period start
+    :type end_millis: int
+    :param wallet_id: (optional) Limit result with single WebSite orders
+    :type wallet_id: int
+    :param max_count: (optional) Limit number of returned orders, must be less than default 10000
+    :type max_count: int
+    :raises: :class:`PyCardPay.exceptions.HTTPError`, :class:`PyCardPay.exceptions.JSONParsingError`
+    :returns: dict
+
+    Return dict structure:
+
+    >>> {
+        'data': [
+            {
+                'id': '299150',         # ID assigned to the order in CardPay
+                ...
+            },
+            ...
+        ],
+        'hasMore': True     # Indicates if there are more orders for this period than was returned
+    }
+    """
+    params = {
+        'startMillis': int(start_millis),
+        'endMillis': int(end_millis),
+    }
+    if wallet_id is not None:
+        params['walletId'] = wallet_id
+    if max_count is not None:
+        params['maxCount'] = max_count
+    url = base_url + '?' + urlencode(params)
+    r = requests.get(url, auth=(client_login, client_password))
+    if r.status_code != 200:
+        raise HTTPError(u'Expected HTTP response code "200" but received "{}"'.format(r.status_code),
+                        method='GET', url=url, response=r)
+    try:
+        r_json = json.loads(r.content.decode('utf-8'))
+    except ValueError as e:
+        raise JSONParsingError(u'Failed to parse response from CardPay service: {}'.format(e),
+                               method='GET', url=url, content=r.content)
+    return r_json
+
+
+def _status(base_url, id, client_login, client_password, settings=live_settings):
+    """Use this call to get the status of the transaction by it’s id.
+
+    :param base_url: Base API URL to send request to
+    :type base_url: str|unicode
+    :param id: Transaction id
+    :type id: int
+    :raises: :class:`PyCardPay.exceptions.HTTPError`, :class:`PyCardPay.exceptions.JSONParsingError`, :class:`PyCardPay.exceptions.TransactionNotFound`
+    :returns: dict
+
+    Return dict structure:
+
+    >>> {
+        "data": {
+            "id": "12347",
+            ...
+        }
+    }
+    """
+    url = base_url + '/' + str(id)
+    r = requests.get(url, auth=(client_login, client_password))
+    if r.status_code == 404:
+        raise TransactionNotFound('Payment with ID {} is not found'.format(id))
+    elif r.status_code != 200:
+        raise HTTPError(u'Expected HTTP response code "200" but received "{}"'.format(r.status_code),
+                        method='GET', url=url, response=r)
+    try:
+        r_json = json.loads(r.content.decode('utf-8'))
+    except ValueError as e:
+        raise JSONParsingError(u'Failed to parse response from CardPay service: {}'.format(e),
+                               method='GET', url=url, content=r.content)
+    return r_json
+
+
+def list_payments(client_login, client_password, start_millis, end_millis,
+                  wallet_id=None, max_count=None, settings=live_settings):
     """Get the list of orders for a period of time. This service will return only orders available for this user to be seen.
 
     :param client_login: Unique store id. It is the same as for administrative interface
@@ -340,28 +429,12 @@ def payments(client_login, client_password, start_millis, end_millis,
         'hasMore': True     # Indicates if there are more orders for this period than was returned
     }
     """
-    params = {
-        'startMillis': int(start_millis),
-        'endMillis': int(end_millis),
-    }
-    if wallet_id is not None:
-        params['walletId'] = wallet_id
-    if max_count is not None:
-        params['maxCount'] = max_count
-    url = settings.url_payments + '?' + urlencode(params)
-    r = requests.get(url, auth=(client_login, client_password))
-    if r.status_code != 200:
-        raise HTTPError(u'Expected HTTP response code "200" but received "{}"'.format(r.status_code),
-                        method='GET', url=url, response=r)
-    try:
-        r_json = json.loads(r.content.decode('utf-8'))
-    except ValueError as e:
-        raise JSONParsingError(u'Failed to parse response from CardPay service: {}'.format(e),
-                               method='GET', url=url, content=r.content)
-    return r_json
+    return _list(settings.url_payments, client_login, client_password,
+                 start_millis, end_millis, wallet_id=wallet_id,
+                 max_count=max_count)
 
 
-def payment_status(id, client_login, client_password, settings=live_settings):
+def payments_status(id, client_login, client_password, settings=live_settings):
     """Use this call to get the status of the payment by it’s id.
 
     :param id: Transaction id
@@ -382,23 +455,11 @@ def payment_status(id, client_login, client_password, settings=live_settings):
         }
     }
     """
-    url = settings.url_payments + '/' + str(id)
-    r = requests.get(url, auth=(client_login, client_password))
-    if r.status_code == 404:
-        raise TransactionNotFound('Payment with ID {} is not found'.format(id))
-    elif r.status_code != 200:
-        raise HTTPError(u'Expected HTTP response code "200" but received "{}"'.format(r.status_code),
-                        method='GET', url=url, response=r)
-    try:
-        r_json = json.loads(r.content.decode('utf-8'))
-    except ValueError as e:
-        raise JSONParsingError(u'Failed to parse response from CardPay service: {}'.format(e),
-                               method='GET', url=url, content=r.content)
-    return r_json
+    return _status(settings.url_payments, id, client_login, client_password)
 
 
-def refunds(client_login, client_password, start_millis, end_millis,
-            wallet_id=None, max_count=None, settings=live_settings):
+def list_refunds(client_login, client_password, start_millis, end_millis,
+                 wallet_id=None, max_count=None, settings=live_settings):
     """Get the list of refunds for a period of time. This service will return only orders available for this user to be seen.
 
     :param client_login: Unique store id. It is the same as for administrative interface
@@ -429,6 +490,7 @@ def refunds(client_login, client_password, start_millis, end_millis,
                 "is3d": False,
                 "currency": "EUR",
                 "amount": 14.14,
+                "customerId": "123",
                 "email": "test1@example.com",
                 "originalOrderId": "12350"
             },
@@ -437,28 +499,12 @@ def refunds(client_login, client_password, start_millis, end_millis,
         'hasMore': True     # Indicates if there are more orders for this period than was returned
     }
     """
-    params = {
-        'startMillis': int(start_millis),
-        'endMillis': int(end_millis),
-    }
-    if wallet_id is not None:
-        params['walletId'] = wallet_id
-    if max_count is not None:
-        params['maxCount'] = max_count
-    url = settings.url_refunds + '?' + urlencode(params)
-    r = requests.get(url, auth=(client_login, client_password))
-    if r.status_code != 200:
-        raise HTTPError(u'Expected HTTP response code "200" but received "{}"'.format(r.status_code),
-                        method='GET', url=url, response=r)
-    try:
-        r_json = json.loads(r.content.decode('utf-8'))
-    except ValueError as e:
-        raise JSONParsingError(u'Failed to parse response from CardPay service: {}'.format(e),
-                               method='GET', url=url, content=r.content)
-    return r_json
+    return _list(settings.url_refunds, client_login, client_password,
+                 start_millis, end_millis, wallet_id=wallet_id,
+                 max_count=max_count)
 
 
-def refund_status(id, client_login, client_password, settings=live_settings):
+def refunds_status(id, client_login, client_password, settings=live_settings):
     """Use this call to get the status of the refund by it’s id.
 
     :param id: Transaction id
@@ -479,16 +525,71 @@ def refund_status(id, client_login, client_password, settings=live_settings):
         }
     }
     """
-    url = settings.url_refunds + '/' + str(id)
-    r = requests.get(url, auth=(client_login, client_password))
-    if r.status_code == 404:
-        raise TransactionNotFound('Refund with ID {} is not found'.format(id))
-    elif r.status_code != 200:
-        raise HTTPError(u'Expected HTTP response code "200" but received "{}"'.format(r.status_code),
-                        method='GET', url=url, response=r)
-    try:
-        r_json = json.loads(r.content.decode('utf-8'))
-    except ValueError as e:
-        raise JSONParsingError(u'Failed to parse response from CardPay service: {}'.format(e),
-                               method='GET', url=url, content=r.content)
-    return r_json
+    return _status(settings.url_refunds, id, client_login, client_password)
+
+
+def list_payouts(client_login, client_password, start_millis, end_millis,
+                 wallet_id=None, max_count=None, settings=live_settings):
+    """Get the list of payouts for a period of time. This service will return only orders available for this user to be seen.
+
+    :param client_login: Unique store id. It is the same as for administrative interface
+    :type client_login: str|unicode
+    :param client_password: Store password. It is the same as for administrative interface
+    :type client_password: str|unicode
+    :param start_millis: Epoch time in milliseconds when requested period starts (inclusive)
+    :type start_millis: int
+    :param end_millis: Epoch time in milliseconds when requested period ends (not inclusive), must be less than 7 days after period start
+    :type end_millis: int
+    :param wallet_id: (optional) Limit result with single WebSite orders
+    :type wallet_id: int
+    :param max_count: (optional) Limit number of returned orders, must be less than default 10000
+    :type max_count: int
+    :raises: :class:`PyCardPay.exceptions.HTTPError`, :class:`PyCardPay.exceptions.JSONParsingError`
+    :returns: dict
+
+    Return dict structure:
+
+    >>> {
+        'data': [
+            {
+                "id": "12348",
+                "number": "949225",
+                "state": "COMPLETED",
+                "date": 1444648088000,
+                "is3d": False,
+                "currency": "EUR",
+                "amount": 14.14,
+                "number": "12350"
+            },
+            ...
+        ],
+        'hasMore': True     # Indicates if there are more orders for this period than was returned
+    }
+    """
+    return _list(settings.url_payouts, client_login, client_password,
+                 start_millis, end_millis, wallet_id=wallet_id,
+                 max_count=max_count)
+
+
+def payouts_status(id, client_login, client_password, settings=live_settings):
+    """Use this call to get the status of the payout by it’s id.
+
+    :param id: Transaction id
+    :type id: int
+    :raises: :class:`PyCardPay.exceptions.HTTPError`, :class:`PyCardPay.exceptions.JSONParsingError`, :class:`PyCardPay.exceptions.TransactionNotFound`
+    :returns: dict
+
+    Return dict structure:
+
+    >>> {
+        "data": {
+            "type": "PAYOUTS",
+            "id": "12352",
+            "created": "2015-10-12T12:34:02Z",
+            "updated": "2015-10-12T12:34:02Z",
+            "state": "COMPLETED",
+            "merchantOrderId": "890081"
+        }
+    }
+    """
+    return _status(settings.url_payouts, id, client_login, client_password)

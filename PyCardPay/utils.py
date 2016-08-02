@@ -11,7 +11,9 @@ import requests
 
 from .exceptions import HTTPError, XMLParsingError
 
-def order_to_xml(order, items=None, billing=None, shipping=None, card=None, recurring=None):
+
+def order_to_xml(order, items=None, billing=None, shipping=None, card=None,
+                 recurring=None):
     """Creates order xml
 
     :param order: Orders information.
@@ -169,8 +171,10 @@ def order_to_xml(order, items=None, billing=None, shipping=None, card=None, recu
     if recurring:
         e_recurring = E.recurring(
             period=str(recurring['period']),
-            price=str(recurring.get('price', e_order.get('amount'))),  # if not price set use order.amount value
-            begin=recurring.get('begin', dt.datetime.now().date().strftime('%d.%m.%Y')),
+            # if not price set use order.amount value
+            price=str(recurring.get('price', e_order.get('amount'))),
+            begin=recurring.get('begin',
+                                dt.datetime.now().date().strftime('%d.%m.%Y')),
         )
         if recurring.get('count'):
             e_recurring.set('count', str(recurring.get('count')))
@@ -189,7 +193,8 @@ def xml_to_string(xml, encode_base64=True):
     :raises: TypeError if passed not an :class:`lxml.etree.Element` as xml parameter.
     :returns: str
     """
-    xml_string = etree.tostring(xml, xml_declaration=True, encoding='utf-8', pretty_print=True)
+    xml_string = etree.tostring(xml, xml_declaration=True, encoding='utf-8',
+                                pretty_print=True)
     if encode_base64:
         return base64.standard_b64encode(xml_string)
     return xml_string
@@ -254,8 +259,10 @@ def make_http_request(url, method='get', **kwargs):
     except AttributeError:
         r = requests.get(url, data=kwargs, verify=True)
     if not (200 <= r.status_code < 300):
-        raise HTTPError(u'Expected HTTP response code "2xx" but received "{}"'.format(r.status_code),
-                        method=method, url=url, data=kwargs, response=r)
+        err_msg = u'Expected HTTP response code "2xx" but received "{}"'\
+            .format(r.status_code)
+        raise HTTPError(err_msg, method=method, url=url, data=kwargs,
+                        response=r)
     return r.content
 
 
@@ -275,8 +282,10 @@ def xml_http_request(url, method='get', **kwargs):
     try:
         return etree.fromstring(xml)
     except etree.Error as e:
-        raise XMLParsingError(u'Failed to parse response from CardPay service: {}'.format(e),
-                              method=method, url=url, data=kwargs, content=xml)
+        err_msg = u'Failed to parse response from CardPay service: {}'\
+            .format(e)
+        raise XMLParsingError(err_msg, method=method, url=url, data=kwargs,
+                              content=xml)
 
 
 def parse_order(xml):

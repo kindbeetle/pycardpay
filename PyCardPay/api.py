@@ -208,7 +208,7 @@ def payouts(wallet_id, client_login, client_password, data, card,
     Parameters structure:
 
     >>> data = {
-        "merchantOrderId": "PO01242324",    # (str|unicode) Represents the ID of the order in merchant’s system 
+        "merchantOrderId": "PO01242324",    # (str|unicode) Represents the ID of the order in merchant’s system
         "amount": 128,                      # (Decimal) Represents the amount to be transferred to the customer’s card
         "currency": "USD",                  # (str|unicode) Represents the amount to be transferred to the customer’s card
         "description": "X-mass gift",       # (str|unicode) Optional. Transaction description
@@ -277,10 +277,10 @@ def payouts(wallet_id, client_login, client_password, data, card,
     request = {
         'data': dict(
             data,
-            type = 'PAYOUTS',
-            timestamp = ts.strftime('%Y-%m-%dT%H:%M:%SZ'),
-            amount = str(data['amount']),
-            card = card,
+            type='PAYOUTS',
+            timestamp=ts.strftime('%Y-%m-%dT%H:%M:%SZ'),
+            amount=str(data['amount']),
+            card=card,
         ),
     }
     url = settings.url_payouts + '?' + urlencode({'walletId': wallet_id})
@@ -351,7 +351,8 @@ def _list(base_url, client_login, client_password, start_millis, end_millis,
     return r_json
 
 
-def _status(base_url, id, client_login, client_password, settings=live_settings):
+def _status(base_url, id, client_login, client_password,
+            settings=live_settings):
     """Use this call to get the status of the transaction by it’s id.
 
     :param base_url: Base API URL to send request to

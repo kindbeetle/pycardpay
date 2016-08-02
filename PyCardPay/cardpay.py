@@ -32,7 +32,8 @@ class CardPay:
         self.client_password = client_password
         if not isinstance(client_password, bytes):
             client_password = client_password.encode('ascii')
-        self.client_password_sha256 = hashlib.sha256(client_password).hexdigest()
+        self.client_password_sha256 = hashlib.sha256(client_password)\
+            .hexdigest()
         self.test = test
         self.settings = test_settings if test else live_settings
 
@@ -111,7 +112,7 @@ class CardPay:
         """
         kwargs = {} if amount is None else {'amount': amount}
         return api.refund(id=id, reason=reason, client_login=self.client_login,
-                          client_password=self.client_password_sha256, 
+                          client_password=self.client_password_sha256,
                           settings=self.settings, **kwargs)
 
     def capture(self, id):
@@ -243,7 +244,7 @@ class CardPay:
         Parameters structure:
 
         >>> data = {
-            "merchantOrderId": "PO01242324",    # (str|unicode) Represents the ID of the order in merchant’s system 
+            "merchantOrderId": "PO01242324",    # (str|unicode) Represents the ID of the order in merchant’s system
             "amount": 128,                      # (Decimal) Represents the amount to be transferred to the customer’s card
             "currency": "USD",                  # (str|unicode) Represents the amount to be transferred to the customer’s card
             "description": "X-mass gift",       # (str|unicode) Optional. Transaction description
@@ -418,10 +419,12 @@ class CardPay:
             'hasMore': True     # Indicates if there are more orders for this period than was returned
         }
         """
-        return api.list_refunds(self.client_login, self.client_password,
-                                start_millis=start_millis, end_millis=end_millis,
-                                wallet_id=self.wallet_id, max_count=max_count,
-                                settings=self.settings)
+        return api.list_refunds(
+            self.client_login, self.client_password,
+            start_millis=start_millis, end_millis=end_millis,
+            wallet_id=self.wallet_id, max_count=max_count,
+            settings=self.settings
+        )
 
     def refunds_status(self, id):
         """Use this call to get the status of the refund by it’s id.
@@ -481,10 +484,12 @@ class CardPay:
             'hasMore': True     # Indicates if there are more orders for this period than was returned
         }
         """
-        return api.list_payouts(self.client_login, self.client_password,
-                                start_millis=start_millis, end_millis=end_millis,
-                                wallet_id=self.wallet_id, max_count=max_count,
-                                settings=self.settings)
+        return api.list_payouts(
+            self.client_login, self.client_password,
+            start_millis=start_millis, end_millis=end_millis,
+            wallet_id=self.wallet_id, max_count=max_count,
+            settings=self.settings
+        )
 
     def payouts_status(self, id):
         """Use this call to get the status of the payout by it’s id.

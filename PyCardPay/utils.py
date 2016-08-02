@@ -240,7 +240,10 @@ def parse_response(xml):
     try:
         return etree.fromstring(xml)
     except etree.Error as e:
-        raise XMLParsingError(u'Failed to parse response from CardPay service: {}'.format(e), content=xml)
+        raise XMLParsingError(
+            u'Failed to parse response from CardPay service: {}'.format(e),
+            content=xml
+        )
 
 
 def make_http_request(url, method='get', **kwargs):
@@ -259,10 +262,11 @@ def make_http_request(url, method='get', **kwargs):
     except AttributeError:
         r = requests.get(url, data=kwargs, verify=True)
     if not (200 <= r.status_code < 300):
-        err_msg = u'Expected HTTP response code "2xx" but received "{}"'\
-            .format(r.status_code)
-        raise HTTPError(err_msg, method=method, url=url, data=kwargs,
-                        response=r)
+        raise HTTPError(
+            u'Expected HTTP response code "2xx" but '
+            u'received "{}"'.format(r.status_code),
+            method=method, url=url, data=kwargs, response=r
+        )
     return r.content
 
 
@@ -282,10 +286,10 @@ def xml_http_request(url, method='get', **kwargs):
     try:
         return etree.fromstring(xml)
     except etree.Error as e:
-        err_msg = u'Failed to parse response from CardPay service: {}'\
-            .format(e)
-        raise XMLParsingError(err_msg, method=method, url=url, data=kwargs,
-                              content=xml)
+        raise XMLParsingError(
+            u'Failed to parse response from CardPay service: {}'.format(e),
+            method=method, url=url, data=kwargs, content=xml
+        )
 
 
 def parse_order(xml):

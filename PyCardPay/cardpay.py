@@ -133,7 +133,7 @@ class CardPay:
                            settings=self.settings)
 
     def pay(self, order, items=None, billing=None, shipping=None, card=None,
-            recurring=None):
+            generate_card_token=False, card_token=None, recurring=None):
         """Process payment
 
         :param order: Orders information.
@@ -146,6 +146,10 @@ class CardPay:
         :type billing: dict
         :param card: (optional) Credit card information
         :type card: dict
+        :param generate_card_token: (optional) Whether card token should be generated
+        :type generate_card_token: bool
+        :param card_token: (optional) Card token used instead of card data
+        :type card_token: str
         :param recurring: Recurring payment
         :type recurring: dict
         :raises: KeyError if wasn't specified required items in order parameter.
@@ -227,9 +231,26 @@ class CardPay:
             'url':  '...',              # URL you need to redirect customer to
         }
         """
+        if generate_card_token:
+            assert card_token is None, \
+                ('"card_token" and "generate_card_token" arguments '
+                 'are mutually exclusive')
+        if card_token is not None:
+            assert card is not None and list(card) == ['cvv'], \
+                ('If "card_token" is used card object must contain '
+                 'only "cvv" field')
+
         order = dict(order, wallet_id=self.wallet_id)
-        xml = order_to_xml(order, items=items, billing=billing,
-                           shipping=shipping, card=card, recurring=recurring)
+        xml = order_to_xml(
+            order,
+            items=items,
+            billing=billing,
+            shipping=shipping,
+            card=card,
+            generate_card_token=generate_card_token,
+            card_token=card_token,
+            recurring=recurring
+        )
         return api.pay(xml, self.secret, settings=self.settings)
 
     def payouts(self, data, card):

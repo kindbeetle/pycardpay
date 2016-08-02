@@ -253,7 +253,7 @@ class CardPay:
         )
         return api.pay(xml, self.secret, settings=self.settings)
 
-    def payouts(self, data, card):
+    def payouts(self, data, card=None, card_token=None):
         """Create Payout order.
 
         :param data: Order data
@@ -330,9 +330,18 @@ class CardPay:
             ]
         }
         """
-        return api.payouts(self.wallet_id, self.client_login,
-                           self.client_password, data=data, card=card,
-                           settings=self.settings)
+        if card_token is not None:
+            assert card is None, ('"card_token" and "card" arguments '
+                                  'are mutually exclusive')
+        else:
+            assert set(card.keys()) == set(['number', 'expiryMonth',
+                                            'expiryYear'])
+
+        return api.payouts(
+            self.wallet_id, self.client_login, self.client_password,
+            data=data, card=card, card_token=card_token,
+            settings=self.settings
+        )
 
     def list_payments(self, start_millis, end_millis, wallet_id=None,
                       max_count=None):

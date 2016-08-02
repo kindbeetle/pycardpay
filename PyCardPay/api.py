@@ -194,8 +194,8 @@ def pay(xml, secret, settings=live_settings):
     )
 
 
-def payouts(wallet_id, client_login, client_password, data, card,
-            settings=live_settings):
+def payouts(wallet_id, client_login, client_password, data,
+            card=None, card_token=None, settings=live_settings):
     """Create Payout order.
 
     :param wallet_id: Unique merchant’s ID used by the CardPay payment system
@@ -279,29 +279,32 @@ def payouts(wallet_id, client_login, client_password, data, card,
     }
     """
     ts = datetime.utcnow()
-    request = {
-        'data': dict(
-            data,
-            type='PAYOUTS',
-            timestamp=ts.strftime('%Y-%m-%dT%H:%M:%SZ'),
-            amount=str(data['amount']),
-            card=card,
-        ),
-    }
+    request_data = dict(
+        data,
+        type='PAYOUTS',
+        timestamp=ts.strftime('%Y-%m-%dT%H:%M:%SZ'),
+        amount=str(data['amount']),
+    )
+    if card_token:
+        request_data.update(cardToken=card_token)
+    else:
+        request_data.update(card=card)
+
     url = settings.url_payouts + '?' + urlencode({'walletId': wallet_id})
-    r = requests.post(url, json=request, auth=(client_login, client_password))
+    r = requests.post(url, json=request_data,
+                      auth=(client_login, client_password))
     if not (200 <= r.status_code < 300) and r.status_code not in (400, 500):
         raise HTTPError(
             u'Expected HTTP response code "200" but '
             u'received "{}"'.format(r.status_code),
-            method='POST', url=url, data=request, response=r
+            method='POST', url=url, data=request_data, response=r
         )
     try:
         r_json = json.loads(r.content.decode('utf-8'))
     except ValueError as e:
         raise JSONParsingError(
             u'Failed to parse response from CardPay service: {}'.format(e),
-            method='POST', url=url, data=request, content=r.content
+            method='POST', url=url, data=request_data, content=r.content
         )
     return r_json
 

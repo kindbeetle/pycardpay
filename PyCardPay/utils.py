@@ -314,7 +314,7 @@ def parse_order(xml):
                  'date', 'customer_id', 'card_bin', 'card_num',
                  'card_holder', 'decline_code', 'decline_reason',
                  'approval_code', 'is_3d', 'currency', 'amount',
-                 'recurring_id', 'refunded', 'note']:
+                 'card_token', 'recurring_id', 'refunded', 'note']:
         value = xml.get(attr)
         if value is not None:
             if attr in ['id', 'refund_id']:

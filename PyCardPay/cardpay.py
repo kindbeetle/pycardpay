@@ -133,7 +133,7 @@ class CardPay:
                            settings=self.settings)
 
     def pay(self, order, items=None, billing=None, shipping=None, card=None,
-            generate_card_token=False, card_token=None, recurring=None):
+            card_token=None, recurring=None):
         """Process payment
 
         :param order: Orders information.
@@ -231,7 +231,7 @@ class CardPay:
             'url':  '...',              # URL you need to redirect customer to
         }
         """
-        if generate_card_token:
+        if order['generate_card_token']:
             assert card_token is None, \
                 ('"card_token" and "generate_card_token" arguments '
                  'are mutually exclusive')
@@ -247,7 +247,6 @@ class CardPay:
             billing=billing,
             shipping=shipping,
             card=card,
-            generate_card_token=generate_card_token,
             card_token=card_token,
             recurring=recurring
         )

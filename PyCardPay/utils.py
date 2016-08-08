@@ -13,7 +13,7 @@ from .exceptions import HTTPError, XMLParsingError
 
 
 def order_to_xml(order, items=None, billing=None, shipping=None, card=None,
-                 generate_card_token=False, card_token=None, recurring=None):
+                 card_token=None, recurring=None):
     """Creates order xml
 
     :param order: Orders information.
@@ -26,8 +26,6 @@ def order_to_xml(order, items=None, billing=None, shipping=None, card=None,
     :type billing: dict
     :param card: (optional) Credit card information
     :type card: dict
-    :param generate_card_token: (optional) Whether card token should be generated
-    :type generate_card_token: bool
     :param card_token: (optional) Card token used instead of card data
     :type card_token: str
     :param recurring: Recurring payment
@@ -148,8 +146,7 @@ def order_to_xml(order, items=None, billing=None, shipping=None, card=None,
         e_order.set('decline_url', order['decline_url'])
     if order.get('cancel_url'):
         e_order.set('cancel_url', order['cancel_url'])
-
-    if generate_card_token:
+    if order.get('generate_card_token', False):
         e_order.set('generate_card_token', 'true')
 
     if card_token is not None:

@@ -231,7 +231,7 @@ class CardPay:
             'url':  '...',              # URL you need to redirect customer to
         }
         """
-        if order['generate_card_token']:
+        if order.get('generate_card_token'):
             assert card_token is None, \
                 ('"card_token" and "generate_card_token" arguments '
                  'are mutually exclusive')

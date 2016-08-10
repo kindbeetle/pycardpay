@@ -289,9 +289,10 @@ def payouts(wallet_id, client_login, client_password, data,
         request_data.update(cardToken=card_token)
     else:
         request_data.update(card=card)
+    request_payload = {'data': request_data}
 
     url = settings.url_payouts + '?' + urlencode({'walletId': wallet_id})
-    r = requests.post(url, json={'data': request_data},
+    r = requests.post(url, json=request_payload,
                       auth=(client_login, client_password))
     if not (200 <= r.status_code < 300) and r.status_code not in (400, 500):
         raise HTTPError(

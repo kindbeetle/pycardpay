@@ -177,20 +177,25 @@ def pay(xml, secret, settings=live_settings):
     try:
         r_xml = etree.fromstring(r)
     except etree.Error as e:
-        raise XMLParsingError(u'Failed to parse response from CardPay service: {}'.format(e),
-                              method='post', url=settings.url_pay, data=data, content=r)
+        raise XMLParsingError(
+            u'Failed to parse response from CardPay service: {}'.format(e),
+            method='post', url=settings.url_pay, data=data, content=r
+        )
     if r_xml.tag == 'redirect':
         return {
             'url': r_xml.get('url'),
         }
     elif r_xml.tag == 'order':
         return parse_order(r_xml)
-    raise XMLParsingError(u'Unknown XML response. Root tag is neither redirect nor order: {}'.format(r_xml.tag),
-                          method='post', url=settings.url_pay, data=data, content=r)
+    raise XMLParsingError(
+        u'Unknown XML response. Root tag is neither'
+        u'redirect nor order: {}'.format(r_xml.tag),
+        method='post', url=settings.url_pay, data=data, content=r
+    )
 
 
-def payouts(wallet_id, client_login, client_password, data, card,
-            settings=live_settings):
+def payouts(wallet_id, client_login, client_password, data,
+            card=None, card_token=None, settings=live_settings):
     """Create Payout order.
 
     :param wallet_id: Unique merchant’s ID used by the CardPay payment system
@@ -208,7 +213,7 @@ def payouts(wallet_id, client_login, client_password, data, card,
     Parameters structure:
 
     >>> data = {
-        "merchantOrderId": "PO01242324",    # (str|unicode) Represents the ID of the order in merchant’s system 
+        "merchantOrderId": "PO01242324",    # (str|unicode) Represents the ID of the order in merchant’s system
         "amount": 128,                      # (Decimal) Represents the amount to be transferred to the customer’s card
         "currency": "USD",                  # (str|unicode) Represents the amount to be transferred to the customer’s card
         "description": "X-mass gift",       # (str|unicode) Optional. Transaction description
@@ -274,25 +279,34 @@ def payouts(wallet_id, client_login, client_password, data, card,
     }
     """
     ts = datetime.utcnow()
-    request = {
-        'data': dict(
-            data,
-            type = 'PAYOUTS',
-            timestamp = ts.strftime('%Y-%m-%dT%H:%M:%SZ'),
-            amount = str(data['amount']),
-            card = card,
-        ),
-    }
+    request_data = dict(
+        data,
+        type='PAYOUTS',
+        timestamp=ts.strftime('%Y-%m-%dT%H:%M:%SZ'),
+        amount=str(data['amount']),
+    )
+    if card_token:
+        request_data.update(cardToken=card_token)
+    else:
+        request_data.update(card=card)
+    request_payload = {'data': request_data}
+
     url = settings.url_payouts + '?' + urlencode({'walletId': wallet_id})
-    r = requests.post(url, json=request, auth=(client_login, client_password))
+    r = requests.post(url, json=request_payload,
+                      auth=(client_login, client_password))
     if not (200 <= r.status_code < 300) and r.status_code not in (400, 500):
-        raise HTTPError(u'Expected HTTP response code "200" but received "{}"'.format(r.status_code),
-                        method='POST', url=url, data=request, response=r)
+        raise HTTPError(
+            u'Expected HTTP response code "200" but '
+            u'received "{}"'.format(r.status_code),
+            method='POST', url=url, data=request_data, response=r
+        )
     try:
         r_json = json.loads(r.content.decode('utf-8'))
     except ValueError as e:
-        raise JSONParsingError(u'Failed to parse response from CardPay service: {}'.format(e),
-                               method='POST', url=url, data=request, content=r.content)
+        raise JSONParsingError(
+            u'Failed to parse response from CardPay service: {}'.format(e),
+            method='POST', url=url, data=request_data, content=r.content
+        )
     return r_json
 
 
@@ -341,17 +355,23 @@ def _list(base_url, client_login, client_password, start_millis, end_millis,
     url = base_url + '?' + urlencode(params)
     r = requests.get(url, auth=(client_login, client_password))
     if r.status_code != 200:
-        raise HTTPError(u'Expected HTTP response code "200" but received "{}"'.format(r.status_code),
-                        method='GET', url=url, response=r)
+        raise HTTPError(
+            u'Expected HTTP response code "200" but '
+            u'received "{}"'.format(r.status_code),
+            method='GET', url=url, response=r
+        )
     try:
         r_json = json.loads(r.content.decode('utf-8'))
     except ValueError as e:
-        raise JSONParsingError(u'Failed to parse response from CardPay service: {}'.format(e),
-                               method='GET', url=url, content=r.content)
+        raise JSONParsingError(
+            u'Failed to parse response from CardPay service: {}'.format(e),
+            method='GET', url=url, content=r.content
+        )
     return r_json
 
 
-def _status(base_url, id, client_login, client_password, settings=live_settings):
+def _status(base_url, id, client_login, client_password,
+            settings=live_settings):
     """Use this call to get the status of the transaction by it’s id.
 
     :param base_url: Base API URL to send request to
@@ -375,13 +395,18 @@ def _status(base_url, id, client_login, client_password, settings=live_settings)
     if r.status_code == 404:
         raise TransactionNotFound('Payment with ID {} is not found'.format(id))
     elif r.status_code != 200:
-        raise HTTPError(u'Expected HTTP response code "200" but received "{}"'.format(r.status_code),
-                        method='GET', url=url, response=r)
+        raise HTTPError(
+            u'Expected HTTP response code "200" but '
+            u'received "{}"'.format(r.status_code),
+            method='GET', url=url, response=r
+        )
     try:
         r_json = json.loads(r.content.decode('utf-8'))
     except ValueError as e:
-        raise JSONParsingError(u'Failed to parse response from CardPay service: {}'.format(e),
-                               method='GET', url=url, content=r.content)
+        raise JSONParsingError(
+            u'Failed to parse response from CardPay service: {}'.format(e),
+            method='GET', url=url, content=r.content
+        )
     return r_json
 
 

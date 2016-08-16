@@ -32,7 +32,8 @@ class CardPay:
         self.client_password = client_password
         if not isinstance(client_password, bytes):
             client_password = client_password.encode('ascii')
-        self.client_password_sha256 = hashlib.sha256(client_password).hexdigest()
+        self.client_password_sha256 = hashlib.sha256(client_password)\
+            .hexdigest()
         self.test = test
         self.settings = test_settings if test else live_settings
 
@@ -111,7 +112,7 @@ class CardPay:
         """
         kwargs = {} if amount is None else {'amount': amount}
         return api.refund(id=id, reason=reason, client_login=self.client_login,
-                          client_password=self.client_password_sha256, 
+                          client_password=self.client_password_sha256,
                           settings=self.settings, **kwargs)
 
     def capture(self, id):
@@ -132,7 +133,7 @@ class CardPay:
                            settings=self.settings)
 
     def pay(self, order, items=None, billing=None, shipping=None, card=None,
-            recurring=None):
+            card_token=None, recurring=None):
         """Process payment
 
         :param order: Orders information.
@@ -145,6 +146,10 @@ class CardPay:
         :type billing: dict
         :param card: (optional) Credit card information
         :type card: dict
+        :param generate_card_token: (optional) Whether card token should be generated
+        :type generate_card_token: bool
+        :param card_token: (optional) Card token used instead of card data
+        :type card_token: str
         :param recurring: Recurring payment
         :type recurring: dict
         :raises: KeyError if wasn't specified required items in order parameter.
@@ -226,12 +231,28 @@ class CardPay:
             'url':  '...',              # URL you need to redirect customer to
         }
         """
+        if order.get('generate_card_token'):
+            assert card_token is None, \
+                ('"card_token" and "generate_card_token" arguments '
+                 'are mutually exclusive')
+        if card_token is not None:
+            assert card is not None and list(card) == ['cvv'], \
+                ('If "card_token" is used card object must contain '
+                 'only "cvv" field')
+
         order = dict(order, wallet_id=self.wallet_id)
-        xml = order_to_xml(order, items=items, billing=billing,
-                           shipping=shipping, card=card, recurring=recurring)
+        xml = order_to_xml(
+            order,
+            items=items,
+            billing=billing,
+            shipping=shipping,
+            card=card,
+            card_token=card_token,
+            recurring=recurring
+        )
         return api.pay(xml, self.secret, settings=self.settings)
 
-    def payouts(self, data, card):
+    def payouts(self, data, card=None, card_token=None):
         """Create Payout order.
 
         :param data: Order data
@@ -243,7 +264,7 @@ class CardPay:
         Parameters structure:
 
         >>> data = {
-            "merchantOrderId": "PO01242324",    # (str|unicode) Represents the ID of the order in merchant’s system 
+            "merchantOrderId": "PO01242324",    # (str|unicode) Represents the ID of the order in merchant’s system
             "amount": 128,                      # (Decimal) Represents the amount to be transferred to the customer’s card
             "currency": "USD",                  # (str|unicode) Represents the amount to be transferred to the customer’s card
             "description": "X-mass gift",       # (str|unicode) Optional. Transaction description
@@ -308,9 +329,18 @@ class CardPay:
             ]
         }
         """
-        return api.payouts(self.wallet_id, self.client_login,
-                           self.client_password, data=data, card=card,
-                           settings=self.settings)
+        if card_token is not None:
+            assert card is None, ('"card_token" and "card" arguments '
+                                  'are mutually exclusive')
+        else:
+            assert set(card.keys()) == set(['number', 'expiryMonth',
+                                            'expiryYear'])
+
+        return api.payouts(
+            self.wallet_id, self.client_login, self.client_password,
+            data=data, card=card, card_token=card_token,
+            settings=self.settings
+        )
 
     def list_payments(self, start_millis, end_millis, wallet_id=None,
                       max_count=None):
@@ -418,10 +448,12 @@ class CardPay:
             'hasMore': True     # Indicates if there are more orders for this period than was returned
         }
         """
-        return api.list_refunds(self.client_login, self.client_password,
-                                start_millis=start_millis, end_millis=end_millis,
-                                wallet_id=self.wallet_id, max_count=max_count,
-                                settings=self.settings)
+        return api.list_refunds(
+            self.client_login, self.client_password,
+            start_millis=start_millis, end_millis=end_millis,
+            wallet_id=self.wallet_id, max_count=max_count,
+            settings=self.settings
+        )
 
     def refunds_status(self, id):
         """Use this call to get the status of the refund by it’s id.
@@ -481,10 +513,12 @@ class CardPay:
             'hasMore': True     # Indicates if there are more orders for this period than was returned
         }
         """
-        return api.list_payouts(self.client_login, self.client_password,
-                                start_millis=start_millis, end_millis=end_millis,
-                                wallet_id=self.wallet_id, max_count=max_count,
-                                settings=self.settings)
+        return api.list_payouts(
+            self.client_login, self.client_password,
+            start_millis=start_millis, end_millis=end_millis,
+            wallet_id=self.wallet_id, max_count=max_count,
+            settings=self.settings
+        )
 
     def payouts_status(self, id):
         """Use this call to get the status of the payout by it’s id.

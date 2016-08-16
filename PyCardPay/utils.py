@@ -1,6 +1,6 @@
 # coding=utf-8
+
 import base64
-import codecs
 import datetime as dt
 import hashlib
 from decimal import Decimal
@@ -11,7 +11,9 @@ import requests
 
 from .exceptions import HTTPError, XMLParsingError
 
-def order_to_xml(order, items=None, billing=None, shipping=None, card=None, recurring=None):
+
+def order_to_xml(order, items=None, billing=None, shipping=None, card=None,
+                 card_token=None, recurring=None):
     """Creates order xml
 
     :param order: Orders information.
@@ -24,6 +26,8 @@ def order_to_xml(order, items=None, billing=None, shipping=None, card=None, recu
     :type billing: dict
     :param card: (optional) Credit card information
     :type card: dict
+    :param card_token: (optional) Card token used instead of card data
+    :type card_token: str
     :param recurring: Recurring payment
     :type recurring: dict
     :raises: KeyError if wasn't specified required items in order parameter.
@@ -142,6 +146,11 @@ def order_to_xml(order, items=None, billing=None, shipping=None, card=None, recu
         e_order.set('decline_url', order['decline_url'])
     if order.get('cancel_url'):
         e_order.set('cancel_url', order['cancel_url'])
+    if order.get('generate_card_token', False):
+        e_order.set('generate_card_token', 'true')
+
+    if card_token is not None:
+        e_order.set('card_token', card_token)
 
     # <order><item ... /></order>
     for item in items:
@@ -169,8 +178,10 @@ def order_to_xml(order, items=None, billing=None, shipping=None, card=None, recu
     if recurring:
         e_recurring = E.recurring(
             period=str(recurring['period']),
-            price=str(recurring.get('price', e_order.get('amount'))),  # if not price set use order.amount value
-            begin=recurring.get('begin', dt.datetime.now().date().strftime('%d.%m.%Y')),
+            # if not price set use order.amount value
+            price=str(recurring.get('price', e_order.get('amount'))),
+            begin=recurring.get('begin',
+                                dt.datetime.now().date().strftime('%d.%m.%Y')),
         )
         if recurring.get('count'):
             e_recurring.set('count', str(recurring.get('count')))
@@ -189,7 +200,8 @@ def xml_to_string(xml, encode_base64=True):
     :raises: TypeError if passed not an :class:`lxml.etree.Element` as xml parameter.
     :returns: str
     """
-    xml_string = etree.tostring(xml, xml_declaration=True, encoding='utf-8', pretty_print=True)
+    xml_string = etree.tostring(xml, xml_declaration=True, encoding='utf-8',
+                                pretty_print=True)
     if encode_base64:
         return base64.standard_b64encode(xml_string)
     return xml_string
@@ -235,7 +247,10 @@ def parse_response(xml):
     try:
         return etree.fromstring(xml)
     except etree.Error as e:
-        raise XMLParsingError(u'Failed to parse response from CardPay service: {}'.format(e), content=xml)
+        raise XMLParsingError(
+            u'Failed to parse response from CardPay service: {}'.format(e),
+            content=xml
+        )
 
 
 def make_http_request(url, method='get', **kwargs):
@@ -254,8 +269,11 @@ def make_http_request(url, method='get', **kwargs):
     except AttributeError:
         r = requests.get(url, data=kwargs, verify=True)
     if not (200 <= r.status_code < 300):
-        raise HTTPError(u'Expected HTTP response code "2xx" but received "{}"'.format(r.status_code),
-                        method=method, url=url, data=kwargs, response=r)
+        raise HTTPError(
+            u'Expected HTTP response code "2xx" but '
+            u'received "{}"'.format(r.status_code),
+            method=method, url=url, data=kwargs, response=r
+        )
     return r.content
 
 
@@ -275,8 +293,10 @@ def xml_http_request(url, method='get', **kwargs):
     try:
         return etree.fromstring(xml)
     except etree.Error as e:
-        raise XMLParsingError(u'Failed to parse response from CardPay service: {}'.format(e),
-                              method=method, url=url, data=kwargs, content=xml)
+        raise XMLParsingError(
+            u'Failed to parse response from CardPay service: {}'.format(e),
+            method=method, url=url, data=kwargs, content=xml
+        )
 
 
 def parse_order(xml):
@@ -291,7 +311,7 @@ def parse_order(xml):
                  'date', 'customer_id', 'card_bin', 'card_num',
                  'card_holder', 'decline_code', 'decline_reason',
                  'approval_code', 'is_3d', 'currency', 'amount',
-                 'recurring_id', 'refunded', 'note']:
+                 'card_token', 'recurring_id', 'refunded', 'note']:
         value = xml.get(attr)
         if value is not None:
             if attr in ['id', 'refund_id']:

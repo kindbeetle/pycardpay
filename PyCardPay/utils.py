@@ -124,12 +124,14 @@ def order_to_xml(order, items=None, billing=None, shipping=None, card=None,
         wallet_id=str(order['wallet_id']),
         number=str(order['number']),
         description=order.get('description', ''),
-        amount=str(order['amount']),
         email=order['email'],
         is_two_phase='yes' if order.get('is_two_phase') is True else 'no',
         is_gateway='yes' if order.get('is_gateway') is True else 'no',
         locale=order.get('locale', 'en'),
     )
+    # if authentication_request == true then `amount` field should absent.
+    if order.get('amount'):
+        e_order.set('amount', str(order['amount']))
     if order.get('currency'):
         e_order.set('currency', order['currency'])
     if e_order.get('is_gateway') == 'yes' and order.get('ip'):
@@ -148,6 +150,8 @@ def order_to_xml(order, items=None, billing=None, shipping=None, card=None,
         e_order.set('cancel_url', order['cancel_url'])
     if order.get('generate_card_token', False):
         e_order.set('generate_card_token', 'true')
+    if order.get('authentication_request', False):
+        e_order.set('authentication_request', 'true')
 
     if card_token is not None:
         e_order.set('card_token', card_token)

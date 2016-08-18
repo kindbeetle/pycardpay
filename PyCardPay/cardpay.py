@@ -240,6 +240,14 @@ class CardPay:
                 ('If "card_token" is used card object must contain '
                  'only "cvv" field')
 
+        if order.get('authentication_request'):
+            assert 'amount' not in order, \
+                ('"authentication_request" and "amount" arguments '
+                 'are mutually exclusive')
+            assert order.get('generate_card_token'), \
+                ('If "authentication_request" field is used '
+                 '"generate_card_token" field must be set to true')
+
         order = dict(order, wallet_id=self.wallet_id)
         xml = order_to_xml(
             order,

@@ -152,6 +152,8 @@ def order_to_xml(order, items=None, billing=None, shipping=None, card=None,
         e_order.set('generate_card_token', 'true')
     if order.get('authentication_request', False):
         e_order.set('authentication_request', 'true')
+    if order.get('locale'):
+        e_order.set('locale', order['locale'])
 
     if card_token is not None:
         e_order.set('card_token', card_token)

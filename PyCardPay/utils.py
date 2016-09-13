@@ -327,7 +327,12 @@ def parse_order(xml):
                     value = int(value)
             elif attr == 'is_3d':
                 value = (value == 'true')
-            elif attr in ['amount', 'refunded']:
+            elif attr == 'refunded':
                 value = Decimal(value)
+            elif attr == 'amount':
+                if value == '-':
+                    value = None
+                else:
+                    value = Decimal(value)
             result[attr] = value
     return result

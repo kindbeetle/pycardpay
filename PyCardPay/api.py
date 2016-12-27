@@ -618,3 +618,64 @@ def payouts_status(id, client_login, client_password, settings=live_settings):
     }
     """
     return _status(settings.url_payouts, id, client_login, client_password)
+
+
+def payouts_status_by_number(number, wallet_id, client_login, client_password,
+                             settings=live_settings):
+    """Use this call to get the status of the payouts by merchant id (number).
+
+    :param number: Merchant order number
+    :type number: str
+    :param wallet_id: Limit result with single WebSite orders
+    :type wallet_id: int
+    :param client_login: Unique store id. It is the same as for administrative interface
+    :type client_login: str|unicode
+    :param client_password: Store password. It is the same as for administrative interface
+    :type client_password: str|unicode
+
+    :raises: :class:`PyCardPay.exceptions.HTTPError`, :class:`PyCardPay.exceptions.JSONParsingError`, :class:`PyCardPay.exceptions.TransactionNotFound`
+    :returns: dict
+
+    Return dict structure:
+    {'data': [{'amount': 93909,
+           'authCode': None,
+           'currency': 'RUB',
+           'customerId': None,
+           'date': 1482240954000,
+           'declineCode': None,
+           'declineReason': None,
+           'description': 'Order #1781; CustomerID #2756',
+           'email': None,
+           'id': '730801',
+           'is3d': False,
+           'note': 'Платёж для #2756 (**** **** **** 0002)',
+           'number': 'c274daa9-a5ff-4243-8018-cf8054ca66f9',
+           'originalOrderId': '725097',
+           'refundedAmount': None,
+           'rrn': None,
+           'state': 'COMPLETED'}],
+    'hasMore': False}
+
+    or
+
+    {'data': [], 'hasMore': False}
+    """
+
+    r = requests.get(
+        settings.url_payouts,
+        params={'number': number, 'wallet_id': wallet_id},
+        auth=(client_login, client_password)
+    )
+    if r.status_code != 200:
+        raise HTTPError(
+            u'Expected HTTP response code "200" but '
+            u'received "{}"'.format(r.status_code),
+            method='GET', url=r.url, response=r
+        )
+    try:
+        return json.loads(r.content.decode('utf-8'))
+    except ValueError as e:
+        raise JSONParsingError(
+            u'Failed to parse response from CardPay service: {}'.format(e),
+            method='GET', url=r.url, content=r.content
+        )

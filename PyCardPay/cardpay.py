@@ -544,6 +544,15 @@ class CardPay:
         return api.payouts_status(id, self.client_login, self.client_password,
                                   settings=self.settings)
 
+    def payouts_status_by_number(self, number):
+        return api.payouts_status_by_number(
+            number=number,
+            wallet_id=self.wallet_id,
+            client_login=self.client_login,
+            client_password=self.client_password,
+            settings=self.settings
+        )
+
     def parse_callback(self, base64_string, sha512):
         """Checks if returned base64 encoded string is encoded with our secret password and parses it.
 

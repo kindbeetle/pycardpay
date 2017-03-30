@@ -9,7 +9,7 @@ from lxml import etree
 from lxml.builder import E
 import requests
 
-from .exceptions import HTTPError, XMLParsingError
+from .exceptions import HTTPError, XMLParsingError, CommunicationError
 
 
 def order_to_xml(order, items=None, billing=None, shipping=None, card=None,
@@ -264,10 +264,15 @@ def make_http_request(url, method='get', **kwargs):
     :raises: :class:`PyCardPay.exceptions.HTTPError` if server returns status code different from 2xx
     :returns: HTML content
     """
+
     try:
-        r = getattr(requests, method)(url, data=kwargs, verify=True)
-    except AttributeError:
-        r = requests.get(url, data=kwargs, verify=True)
+        try:
+            r = getattr(requests, method)(url, data=kwargs, verify=True)
+        except AttributeError:
+            r = requests.get(url, data=kwargs, verify=True)
+    except requests.exceptions.RequestException as exc:
+        raise CommunicationError('Communication error', exc)
+
     if not (200 <= r.status_code < 300):
         raise HTTPError(
             u'Expected HTTP response code "2xx" but '

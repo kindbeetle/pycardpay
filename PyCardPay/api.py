@@ -363,7 +363,12 @@ def _list(base_url, client_login, client_password, start_millis, end_millis,
     if max_count is not None:
         params['maxCount'] = max_count
     url = base_url + '?' + urlencode(params)
-    r = requests.get(url, auth=(client_login, client_password))
+
+    try:
+        r = requests.get(url, auth=(client_login, client_password))
+    except requests.exceptions.RequestException as exc:
+        raise CommunicationError('Communication error', exc)
+
     if r.status_code != 200:
         raise HTTPError(
             u'Expected HTTP response code "200" but '
@@ -401,7 +406,12 @@ def _status(base_url, id, client_login, client_password,
     }
     """
     url = base_url + '/' + str(id)
-    r = requests.get(url, auth=(client_login, client_password))
+
+    try:
+        r = requests.get(url, auth=(client_login, client_password))
+    except requests.exceptions.RequestException as exc:
+        raise CommunicationError('Communication error', exc)
+
     if r.status_code == 404:
         raise TransactionNotFound('Payment with ID {} is not found'.format(id))
     elif r.status_code != 200:
@@ -671,11 +681,15 @@ def payouts_status_by_number(number, wallet_id, client_login, client_password,
     {'data': [], 'hasMore': False}
     """
 
-    r = requests.get(
-        settings.url_payouts,
-        params={'number': number, 'wallet_id': wallet_id},
-        auth=(client_login, client_password)
-    )
+    try:
+        r = requests.get(
+            settings.url_payouts,
+            params={'number': number, 'wallet_id': wallet_id},
+            auth=(client_login, client_password)
+        )
+    except requests.exceptions.RequestException as exc:
+        raise CommunicationError('Communication error', exc)
+
     if r.status_code != 200:
         raise HTTPError(
             u'Expected HTTP response code "200" but '

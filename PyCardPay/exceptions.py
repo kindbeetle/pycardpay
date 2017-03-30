@@ -41,5 +41,13 @@ class HTTPError(PyCardPayException):
         super(HTTPError, self).__init__(msg)
 
 
+class CommunicationError(PyCardPayException):
+    """Raised when arbitrary requests exception occures"""
+    def __init__(self, msg, exc):
+        self.exc = exc
+        self.msg = msg
+        super(CommunicationError, self).__init__(exc)
+
+
 class TransactionNotFound(PyCardPayException):
     pass

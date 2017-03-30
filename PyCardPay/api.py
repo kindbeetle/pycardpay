@@ -1,19 +1,23 @@
 # coding=utf-8
-from .exceptions import (
-    XMLParsingError, JSONParsingError, HTTPError, TransactionNotFound,
-)
-from .utils import (
-    xml_to_string, xml_get_sha512, make_http_request, xml_http_request,
-    parse_order,
-)
+
 import json
 try:
     from urllib import urlencode
 except ImportError:
     from urllib.parse import urlencode
-from lxml import etree
 from datetime import datetime
+
 import requests
+from lxml import etree
+
+from .exceptions import (
+    XMLParsingError, JSONParsingError, HTTPError, TransactionNotFound,
+    CommunicationError,
+)
+from .utils import (
+    xml_to_string, xml_get_sha512, make_http_request, xml_http_request,
+    parse_order,
+)
 from .settings import live_settings
 
 
@@ -292,8 +296,14 @@ def payouts(wallet_id, client_login, client_password, data,
     request_payload = {'data': request_data}
 
     url = settings.url_payouts + '?' + urlencode({'walletId': wallet_id})
-    r = requests.post(url, json=request_payload,
-                      auth=(client_login, client_password))
+    try:
+        r = requests.post(url, json=request_payload,
+                          auth=(client_login, client_password))
+    except requests.exceptions.RequestException as exc:
+        raise CommunicationError(
+            'Communication error while performing payout request', exc
+        )
+
     if not (200 <= r.status_code < 300) and r.status_code not in (400, 500):
         raise HTTPError(
             u'Expected HTTP response code "200" but '

@@ -268,7 +268,7 @@ def make_http_request(url, method='get', http_timeout=None, **kwargs):
     try:
         try:
             r = getattr(requests, method)(url, data=kwargs, verify=True,
-                                          http_timeout=timeout)
+                                          timeout=http_timeout)
         except AttributeError:
             r = requests.get(url, data=kwargs, verify=True)
     except requests.exceptions.RequestException as exc:

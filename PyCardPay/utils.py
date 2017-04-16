@@ -253,7 +253,7 @@ def parse_response(xml):
         )
 
 
-def make_http_request(url, method='get', **kwargs):
+def make_http_request(url, method='get', http_timeout=None, **kwargs):
     """Make http get request to *url* passing *kwargs* as arguments
 
     :param url: Request url
@@ -267,7 +267,8 @@ def make_http_request(url, method='get', **kwargs):
 
     try:
         try:
-            r = getattr(requests, method)(url, data=kwargs, verify=True)
+            r = getattr(requests, method)(url, data=kwargs, verify=True,
+                                          http_timeout=timeout)
         except AttributeError:
             r = requests.get(url, data=kwargs, verify=True)
     except requests.exceptions.RequestException as exc:

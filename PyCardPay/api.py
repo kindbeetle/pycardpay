@@ -21,6 +21,9 @@ from .utils import (
 from .settings import live_settings
 
 
+PAY_TIMEOUT = (3, 7)
+
+
 def status_change(settings=live_settings, **kwargs):
     """Change transaction status.
 
@@ -177,7 +180,8 @@ def pay(xml, secret, settings=live_settings):
     order_xml = xml_to_string(xml, encode_base64=True)
     order_sha = xml_get_sha512(xml, secret)
     data = {'orderXML': order_xml, 'sha512': order_sha}
-    r = make_http_request(settings.url_pay, method='post', **data)
+    r = make_http_request(settings.url_pay, method='post',
+                          http_timeout=PAY_TIMEOUT, **data)
     try:
         r_xml = etree.fromstring(r)
     except etree.Error as e:

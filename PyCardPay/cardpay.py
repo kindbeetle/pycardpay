@@ -2,7 +2,9 @@ import base64
 import hashlib
 
 from . import api
-from .utils import order_to_xml, parse_response, parse_order
+from .utils import (
+    order_to_xml, xml_to_string, xml_get_sha512, parse_response, parse_order,
+)
 from .settings import test_settings, live_settings
 from .exceptions import SignatureError
 
@@ -36,6 +38,35 @@ class CardPay:
             .hexdigest()
         self.test = test
         self.settings = test_settings if test else live_settings
+
+    def sign_order(self, order):
+        """Prepare orderXML and sha512.
+        Parameters structure:
+
+        >>> order =  {
+            'number': 10,                   # (int) Unique order ID used by the merchant’s shopping cart.
+            'description': 'Red T-Shirt',   # (str) Optional. Description of product/service being sold.
+            'currency': 'USD',              # (str|unicode) Optional. ISO 4217 currency code.
+            'amount': 120,                  # (Decimal) The total order amount in your account’s selected currency.
+            'customer_id': '123',           # (str|unicode) Optional. Customer’s ID in the merchant’s system
+            'email': 'customer@exmaple.com', # (str|unicode) Customers e-mail address.
+            'is_two_phase': False,          # (bool) Optional. If set to True, the amount will not be captured but only
+            'note': 'Last item',            # (str|unicode) Optional. Note about the order that will not be displayed to customer blocked.
+            'return_url': 'http://example.com/', # (str|unicode) Optional. Overrides default success URL and decline URL. return_url can be used separately or together with other url parameters
+            'success_url': 'http://example.com/', # (str|unicode) Optional. Overrides default success URL only
+            'decline_url': 'http://example.com/', # (str|unicode) Optional. Overrides default decline_URL only
+            'cancel_url': 'http://example.com/', # (str|unicode) Optional. Overrides default cancel URL only
+            'is_gateway': False,            # (bool) Optional. If set to True, the "Gateway Mode" will be used.
+            'locale': 'ru',                 # (str|unicode) Optional. Preferred locale for the payment page.
+            'ip': '10.20.30.40',            # (str|unicode) Optional. Customers IPv4 address. Used only in "Gateway Mode".
+        }
+        """
+
+        xml = order_to_xml(order)
+        order_xml = xml_to_string(xml, encode_base64=True)
+        order_sha = xml_get_sha512(xml, self.secret)
+
+        return {'orderXML': order_xml, 'sha512': order_sha}
 
     def status(self, **kwargs):
         """Get transactions report

@@ -64,7 +64,7 @@ class CardPay:
 
         order = dict(order, wallet_id=self.wallet_id)
         xml = order_to_xml(order)
-        order_xml = xml_to_string(xml, encode_base64=True)
+        order_xml = xml_to_string(xml, encode_base64=True).decode('utf-8')
         order_sha = xml_get_sha512(xml, self.secret)
 
         return {'orderXML': order_xml, 'sha512': order_sha}
